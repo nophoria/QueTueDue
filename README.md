@@ -1,1 +1,12 @@
 # QueTueDue
+QueTueDue is a simple To-Do app made with PyQt6 that features a toolbar, categories and a system tray icon for quick access to your next To-Do items.
+
+The program has 3 categories: To-Do, In Progress and Done:
+<img width="1384" height="250" alt="QueTueDue's categories" src="https://github.com/user-attachments/assets/0e92c3a6-3f13-4148-b663-c896b8a99b17" />
+
+QTD features a toolbar with multiple features - Add, Remove, Remove Done, Remove All:
+<img width="142" height="28" alt="QueTueDue's toolbar" src="https://github.com/user-attachments/assets/c733aa4d-8b53-4294-b568-26af717b2662" />
+
+QueTueDue's primary feature is the quick-access list inside your system tray, containing your current To-Do items (shown on Arch Linux with hyprland):
+<img width="359" height="233" alt="image" src="https://github.com/user-attachments/assets/3336621e-0382-438e-b0bd-3668ca2ba0eb" />
+
