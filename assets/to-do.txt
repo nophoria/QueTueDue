@@ -1,0 +1,19 @@
+tFix Remove Item drop box list ending with new lines
+tEdit task toolbar item?
+iBECOME A PROGRAMMING MASTER
+tCategories?
+tStats? (Mrs. Greg)
+tAllow spaces in filenames (crashes if app in filepath with spaces in it)
+dTest on Windows
+tMake "Mark all as done" toolbar item
+dL1 Notes
+tKeyboard shortcuts?
+tMake cram.com flashcards for CSI 3.0 3.1
+tMake items draggable with QDrag
+iiMedia PPTX
+tForce foating window?
+tQML Stylesheets to make app look f a n c y
+tSettings toolbar button
+
+
+dL5 Notes
