@@ -122,10 +122,10 @@ class AddWindow(QWidget):
         self.layout.addWidget(self.input)
         self.layout.addLayout(self.button_layout)
         self.no_button.pressed.connect(self.exit)
-        self.yes_button.pressed.connect(self.appendNewTask)
+        self.yes_button.pressed.connect(self.append_new_task)
         self.setLayout(self.layout)
     
-    def appendNewTask(self):
+    def append_new_task(self):
         """Add a task to the to-do list by appending a line to the todo
         file in the to-do category (t).
         """
