@@ -32,3 +32,5 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
 Or:
 <img width="144" height="134" alt="image" src="https://github.com/user-attachments/assets/4e2e1ab7-9f51-493f-974b-5f301bb4f2d5" />
 
+Thanks for checking out this begginner project of mine!
+I've _tried_ to abide by PEP 8 as much as possible... but if I've missed a spot feel free to report a bug!
