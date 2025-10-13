@@ -1,6 +1,6 @@
-# QueTueDue v0.6.0
+# QueTueDue v0.6.0-b1
 
-__version__ = "0.6.0"
+__version__ = "0.6.0-b1"
 
 # Import dependecies
 import sys
