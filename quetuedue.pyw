@@ -189,10 +189,9 @@ class DelWindow(QWidget):
         self.button_layout.addWidget(self.no_button)
         with open(TODO_PATH, "r+", encoding="utf-8") as f:
             for line in f:
-                # TODO: this causes newlines at the end of every object
-                # except last one.
                 if line.strip():
                     task_text = re.split("t|i|d", line, maxsplit=1)[1]
+                    task_text = task_text.strip("\n")
                     self.task_list.addItem(task_text)
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.sub_label)
@@ -316,8 +315,8 @@ class DelAllWindow(QWidget):
                                 | Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont("", 32))
-        self.sub_label = QLabel("if you see this then something has not applied"
-        " (or ran) :3")
+        self.sub_label = QLabel("if you see this then something has not"
+        "applied (or ran) :3")
         self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter
                                    | Qt.AlignmentFlag.AlignTop)
         self.sub_label.setWordWrap(True)
