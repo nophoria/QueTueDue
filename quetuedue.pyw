@@ -6,6 +6,7 @@ __version__ = "0.6.0-b1"
 import sys
 import os
 import re
+import time
 
 from PyQt6.QtCore import(
     QSize,
@@ -121,6 +122,7 @@ class AddWindow(QWidget):
         self.layout.addWidget(self.sub_label)
         self.layout.addWidget(self.input)
         self.layout.addLayout(self.button_layout)
+        self.input.textChanged.connect(self.check_for_duplicates)
         self.no_button.pressed.connect(self.exit)
         self.yes_button.pressed.connect(self.append_new_task)
         self.setLayout(self.layout)
@@ -135,6 +137,28 @@ class AddWindow(QWidget):
 
         self.app_window.load_checkboxes()
         self.close()
+
+    def check_for_duplicates(self):
+        """Constantly recieves what's in the self.input line edit and
+        checks if a task with the same name already exists. If it does,
+        the function will wait a second, and if the user has stopped
+        typing (i.e the text is the same) then it will grey-out the
+        "Add" (self.yes_button) button and set the text to "Task already
+        exists".
+        """
+        with open(TODO_PATH, "r") as f:
+            lines = f.readlines()
+        
+        line = self.input.text()
+
+        if (f"t{self.input.text()}" in lines
+            or f"i{self.input.text()}" in lines
+            or f"d{self.input.text()}" in lines):
+            self.yes_button.setEnabled(False)
+            self.yes_button.setText("Task already exists")
+        else:
+            self.yes_button.setEnabled(True)
+            self.yes_button.setText("Add")
 
     def exit(self):
         self.close()
