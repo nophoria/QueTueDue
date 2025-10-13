@@ -1,3 +1,6 @@
+# EXPERIMENTAL
+This is the **_experimental_** branch of QueTueDue, usually containing buggy and unfinished features. To get the latest, (mostly) stable release, head to the [main][https://Pigable08/QueTueDue/tree/main] branch of QueTueDue
+
 # QueTueDue
 QueTueDue is a simple To-Do app made with PyQt6 that features a toolbar, categories and a system tray icon for quick access to your next To-Do items.
 
@@ -12,7 +15,7 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
 
 # Roadmap
 
-**To-Add:**
+## To-Add:
  - Mark all as done toolbar action
  - Colour-coded categories
  - Keyboard Shortcuts
