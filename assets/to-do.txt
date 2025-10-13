@@ -1,3 +1,3 @@
 tAdd a new task by pressing the circled tick with a cross on the toolbar
 tYou could remove this task with the circled tick with a cross on the toolbar
-tOr you could just use the clear all butotn on the toolbar represented by a bin
+tOr you could just use the clear all button on the toolbar represented by a bin
