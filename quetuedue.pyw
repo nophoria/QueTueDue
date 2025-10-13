@@ -1,6 +1,6 @@
-# QueTueDue v0.5
+# QueTueDue v0.6.0
 
-__version__ = "0.5"
+__version__ = "0.6.0"
 
 # Import dependecies
 import sys
@@ -405,6 +405,7 @@ class MainWindow(QMainWindow):
         self.todo_layout = QVBoxLayout()
         self.in_prog_layout = QVBoxLayout()
         self.done_layout = QVBoxLayout()
+        self.about_layout = QHBoxLayout()
 
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -423,13 +424,20 @@ class MainWindow(QMainWindow):
         self.main_layout.addLayout(self.tasks_layout)
         
         # Widgets
+        self.spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum,
+                                       QSizePolicy.Policy.Expanding)
         self.about_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum,
                                        QSizePolicy.Policy.Expanding)
         self.about_label = QLabel(f"QueTueDue V{__version__}")
-        self.about_Separator = separator("h")
-        self.main_layout.addItem(self.about_spacer)
-        self.main_layout.addWidget(self.about_Separator)
-        self.main_layout.addWidget(self.about_label)
+        self.about_button = QPushButton("About")
+        self.settings_button = QPushButton("Settings")
+        self.about_layout.addWidget(self.about_label)
+        self.about_layout.addItem(self.about_spacer)
+        self.about_layout.addWidget(self.about_button)
+        self.about_layout.addWidget(self.settings_button)
+        self.main_layout.addItem(self.spacer)
+        self.main_layout.addWidget(separator("h"))
+        self.main_layout.addLayout(self.about_layout)
 
         self.todo_header = QLabel("To-Do")
         self.todo_header.setFont(QFont("", 20))
