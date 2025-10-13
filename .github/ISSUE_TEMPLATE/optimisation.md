@@ -1,6 +1,6 @@
 ---
 name: Optimisation
-about: Is my code formatted weirdly? Please tell me! (I promise I wont bite :3)
+about: Is my code formatted weirdly? Have I missed a PEP8 principle somewhere? Please tell me!
 title: ''
 labels: ''
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Type of optimisation**
-Could I improve a function? Have I completely forgotten about consistency?
+Could I improve a function? Have I completely forgotten about consistency? I'm trying to keep my code as readable and as friendly as possible, so also describe how this affected readability.
 
 **Snippet of code**
 Where did this occur?
