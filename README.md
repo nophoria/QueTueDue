@@ -12,7 +12,7 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
 
 # Roadmap
 
-**To-Add:**
+## To-Add:
  - Mark all as done toolbar action
  - Colour-coded categories
  - Keyboard Shortcuts
