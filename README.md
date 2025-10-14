@@ -1,4 +1,4 @@
-![Full-Logo](assets/icons/logo-full.svg)
+![Full-Logo](assets/icons/logo-full.png)
 # QueTueDue
 
 ![GitHub Release](https://img.shields.io/github/v/release/Pigable08/QueTueDue?include_prereleases)
