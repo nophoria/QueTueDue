@@ -1,8 +1,15 @@
 > [!Warning]
 >This is the **_experimental_** branch of QueTueDue, usually containing buggy and unfinished features. To get the latest, (mostly) stable release, head to the [main](https://www.github.com/Pigable08/QueTueDue/tree/main) branch of QueTueDue.
 
+![Full-Logo](assets/icons/logo-full.png)
 # QueTueDue
-QueTueDue is a simple To-Do app made with PyQt6 that features a toolbar, categories and a system tray icon for quick access to your next To-Do items.
+
+![GitHub Release](https://img.shields.io/github/v/release/Pigable08/QueTueDue?include_prereleases)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/Pigable08/QueTueDue/total)
+![GitHub License](https://img.shields.io/github/license/Pigable08/QueTueDue)
+![GitHub Repo stars](https://img.shields.io/github/stars/Pigable08/QueTueDue)
+![GitHub Issues](https://img.shields.io/github/issues/Pigable08/QueTueDue)
+<br>QueTueDue is a simple To-Do app made with PyQt6 that features a toolbar, categories and a system tray icon for quick access to your next To-Do items.
 
 The program has 3 categories: To-Do, In Progress and Done:
 <br><img width="1384" height="250" alt="QueTueDue's categories" src="https://github.com/user-attachments/assets/0e92c3a6-3f13-4148-b663-c896b8a99b17" />
