@@ -6,7 +6,6 @@ __version__ = "0.6.0-b1"
 import sys
 import os
 import re
-import time
 
 from PyQt6.QtCore import(
     QSize,
