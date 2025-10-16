@@ -486,25 +486,29 @@ class MainWindow(QMainWindow):
                                  f"add_task_icon_{THEME}.png")),
                                  "Add", self)
         self.add_action.setStatusTip("Add a new task")
-        self.add_action.triggered.connect(self.add_task_window)
+        self.add_action.triggered.connect(lambda: self.open_popup_window(
+            AddWindow))
 
         self.del_action = QAction(QIcon(os.path.join(ICON_PATH,
                                  f"del_task_icon_{THEME}.png")),
                                  "Remove", self)
         self.del_action.setStatusTip("Remove a task")
-        self.del_action.triggered.connect(self.del_task_window)
+        self.del_action.triggered.connect(lambda: self.open_popup_window(
+            DelWindow))
 
         self.del_done_action = QAction(QIcon(os.path.join(ICON_PATH,
                                      f"del_done_icon_{THEME}.png")),
                                      "Remove Done", self)
         self.del_done_action.setStatusTip("Remove all tasks marked as done")
-        self.del_done_action.triggered.connect(self.del_done_window)
+        self.del_done_action.triggered.connect(lambda: self.open_popup_window(
+            DelDoneWindow))
 
         self.del_all_action = QAction(QIcon(os.path.join(ICON_PATH,
                                     f"del_all_icon_{THEME}.png")),
                                     "Remove ALL Items", self)
         self.del_all_action.setStatusTip("Remove ALL ITEMS PERMANENTLY")
-        self.del_all_action.triggered.connect(self.del_all_window)
+        self.del_all_action.triggered.connect(lambda: self.open_popup_window(
+            DelAllWindow))
 
         self.toolbar.addAction(self.add_action)
         self.toolbar.addAction(self.del_action)
@@ -618,24 +622,10 @@ class MainWindow(QMainWindow):
             e.ignore()
             self.hide()
 
-    def add_task_window(self, checked=False):
-        """Open the Add task toolbar task window pop-up."""
-        self.w = AddWindow(self)
-        self.w.show()
-
-    def del_task_window(self, checked=False):
-        """Open the Remove task toolbar task window pop-up."""
-        self.w = DelWindow(self)
-        self.w.show()
-    
-    def del_done_window(self, checked=False):
-        """Open the Remove all done toolbar task window pop-up."""
-        self.w = DelDoneWindow(self)
-        self.w.show()
-    
-    def del_all_window(self, checked=False):
-        """Open the Remove ALL Items toolbar task window pop-up."""
-        self.w = DelAllWindow(self)
+    def open_popup_window(self, WindowInstance, checked=False):
+        """Open the specified popup window (WindowInstance). This is used for the
+        toolbar and button actions."""
+        self.w = WindowInstance(self)
         self.w.show()
     
     def open_app(self):
