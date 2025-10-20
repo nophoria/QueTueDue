@@ -569,8 +569,6 @@ class MainWindow(QMainWindow):
             else:
                 id = QFontDatabase.addApplicationFont(self.fontfile)
                 self.families.append(QFontDatabase.applicationFontFamilies(id))
-                with open(os.path.join("assets", "font_indexes"), "a") as f:
-                    f.write(str(self.families))
 
         # Layout
         self.main_layout = QVBoxLayout()
