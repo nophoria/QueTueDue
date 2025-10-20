@@ -461,10 +461,6 @@ class FontError(QDialog):
         self.yes_button.setEnabled(False)
         self.no_button.setEnabled(False)
 
-        self.app_window.clear_layout(self.dlg_btn_layout, 0)
-        self.dlg_btn_layout.addWidget(self.progress)
-        self.dlg_btn_layout.addWidget(self.no_button)
-
         QApplication.processEvents()
 
         self.download_result(self.app_window.download_file(self.url, self.font, FONT_PATH))
