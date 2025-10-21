@@ -52,6 +52,7 @@ QueTueDue depends on the following modules\libraries:
 
  - Python 3.10+
  - PyQt6 (6.10)
+ - Requests
 
 # 
 Thanks for checking out this begginner project of mine!
