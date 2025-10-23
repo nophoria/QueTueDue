@@ -860,8 +860,6 @@ class MainWindow(QMainWindow):
 
 
 app = QApplication(sys.argv)
-with open(os.path.join(ASSET_PATH, "quetuedue.qss")) as f:
-    app.setStyleSheet(f.read())
 mainWindow = MainWindow()
 mainWindow.show()
 app.exec()
