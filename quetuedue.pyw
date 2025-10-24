@@ -632,8 +632,9 @@ class MainWindow(QMainWindow):
         self.done_layout.addWidget(self.done_header)
         self.done_header.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
 
+        # Toolbar
         self.toolbar = QToolBar("Utilities")
-        self.addToolBar(self.toolbar)
+        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
         self.add_action = QAction(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add", self)
         self.add_action.setStatusTip("Add a new task")
