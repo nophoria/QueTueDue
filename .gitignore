@@ -2,7 +2,7 @@
 to-do.txt
 
 # Config file (except from default)
-config.config
+config/config.config
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
