@@ -33,15 +33,18 @@ CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config")
 ROOT_PATH = os.path.dirname(__file__)
 
 # Checking if update happened previously
-if __name__ == "file_checker_.py":  # True if renamed and ran during an update
+if os.path.basename == "file_checker_.py":  # True if renamed and ran during an update
     print("Detected a previous update, removing and renaming file_checker.py")
     print("Removing old file_checker...")
-    if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
+    try:
         os.remove(os.path.join(ROOT_PATH, "file_checker.py"))
-        print("Removed old file_checker.")
+    except FileNotFoundError:
+        print("Old file_checker not found.")
+
+    print("Removed old file_checker.")
 
     print("Renaming self: file_checker_.py -> file_checker.py")
-    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), "file_checker.py")
+    os.rename(os.path.abspath(ROOT_PATH), "file_checker.py")
     print("Renamed self.")
 
     print("Starting file_checker as normal...")
@@ -49,18 +52,7 @@ if __name__ == "file_checker_.py":  # True if renamed and ran during an update
     process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
     sys.exit()
 
-
 # Define variables
-branch = False
-
-if "-b" in sys.argv:
-    index = sys.argv.index("-b")
-    if index + 1 < len(sys.argv):
-        branch = sys.argv[index + 1]
-elif "--branch" in sys.argv:
-    index = sys.argv.index("--branch")
-    if index + 1 < len(sys.argv):
-        branch = sys.argv[index + 1]
 
 r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags")
 if r.status_code == 200:
@@ -82,15 +74,14 @@ if os.path.exists(os.path.join(os.path.dirname(__file__), "quetuedue.pyw")):
         target_version = qtd_ver.group(1)
     else:
         target_version = newest_version
-        print("Could not find __version__ in quetuedue.py, is the file missing?")
-
-    print("Target ver:  ", target_version)
+        print("Could not find __version__ in quetuedue.py, defaulting to newest version - is the file missing?")
 else:
     target_version = newest_version
-    print("Could not find __version__ in quetuedue.py, is the file missing?")
+    print("Could not find __version__ in quetuedue.py, defaulting to newest version - is the file missing?")
 
 print("Latest ver:  ", newest_version)
 print("Current ver: ", target_version)
+print("Target ver:  ", target_version)
 
 
 class CheckSysFiles(QThread):
@@ -185,18 +176,11 @@ class CheckSysFiles(QThread):
             for file, url_file in zip(files, url_files):
                 if not os.path.exists(file):
                     try:
-                        if branch:
-                            r = requests.get(
-                                f"https://github.com/nophoria/QueTueDue/raw/{branch}/{url_file}",
-                                headers={"Accept": "application/vnd.github.v3.raw"},
-                                stream=True,
-                            )
-                        else:
-                            r = requests.get(
-                                f"https://github.com/nophoria/QueTueDue/raw/refs/tags/{target_version}/{url_file}",
-                                headers={"Accept": "application/vnd.github.v3.raw"},
-                                stream=True,
-                            )
+                        r = requests.get(
+                            f"https://github.com/nophoria/QueTueDue/raw/refs/tags/{target_version}/{url_file}",
+                            headers={"Accept": "application/vnd.github.v3.raw"},
+                            stream=True,
+                        )
 
                         print(file)
                         print(url_file)
@@ -255,56 +239,44 @@ class CheckSysFiles(QThread):
                 f.write(r.content)
                 print(f"{target_version}.zip successfully downloaded and written!")
 
-            print("Extracting files to .temp folder...")
-            if os.path.exists(os.path.join(ROOT_PATH, ".temp")):
-                shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
-
+            print("Extracting zip...")
             with zipfile.ZipFile(os.path.join(ROOT_PATH, f"{target_version}.zip")) as z:
-                for file in z.infolist():
-                    if file.is_dir():
-                        print(f"{file} has been detected as a folder, not a file. Skipping...")
-                        continue  # Skip folders
+                print("Retrieving paths...")
+                for member in z.infolist():
+                    print(member)
+                    if member.is_dir():
+                        print("Skipped, dir detected.")
+                        continue
 
-                    print(f"Extracting {file} to .temp...")
-                    z.extract(file, path=os.path.join(ROOT_PATH, ".temp"))  # Extract to .temp
+                    parts = member.filename.split("/", 1)  # Ignore top level folder (nophoria-QueTueDue-*)
+                    if len(parts) == 2:
+                        rel_path = parts[1]
+                    else:
+                        rel_path = parts[0]
 
-            print("Renaming file_checker.py in .temp folder...")
-            for folder in os.listdir(os.path.join(ROOT_PATH, ".temp")):
-                if re.match(r"nophoria-QueTueDue-.*", folder):
-                    global zip_folder
-                    zip_folder = os.path.join(ROOT_PATH, ".temp", folder)
-                    print("Zip folder: ", zip_folder)
-                    print("Exists? ", os.path.exists(zip_folder))
-                    break
+                    if rel_path == "file_checker.py":
+                        rel_path = "file_checker_.py"
 
-            for root, dirs, files in os.walk(zip_folder):
-                for file in files:
-                    src_path = os.path.join(root, file)
-                    rel_path = os.path.relpath(src_path, zip_folder)
-                    dst_path = os.path.join(ROOT_PATH, rel_path)
-                    print(f"""
-                    Source:      {src_path}
-                    Relative:    {rel_path}
-                    Destination: {dst_path}""")
+                    print("Making file paths...")
+                    extract_path = os.path.join(ROOT_PATH, ".temp", rel_path)
+                    os.makedirs(os.path.dirname(extract_path), exist_ok=True)
+                    print("Zip successfully extracted to .temp!")
 
-                    if file == "file_checker.py":
-                        dst_path = os.path.join(ROOT_PATH, "file_checker_.py")
-                        print(f"file_checker.py detected! Destination is now {dst_path}")
+                    print("Extracting zip files...")
+                    print("DO NOT QUIT; overwriting files...")
+                    with z.open(member) as source_file, open(extract_path, "wb") as target_file:
+                        print(f"Overwriting {target_file} with {source_file}...")
+                        shutil.copyfileobj(source_file, target_file)
+                        print("File overwritten!")
 
-                    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
-                    print(f"Moving {src_path} to {dst_path}...")
-                    shutil.move(src_path, dst_path)
-                    print("Moved successfully!")
+                print("Cleaning up...")
+                os.remove(os.path.join(ROOT_PATH, f"{target_version}.zip"))
+                print("Zip removed!")
 
-            print("Cleaning up...")
-            shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
-            print(".temp folder removed!")
-            os.remove(os.path.join(ROOT_PATH, f"{target_version}.zip"))
-
-            print("Update completed! Quitting current file_checker and running file_checker_.py")
-            process = QProcess()
-            process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
-            sys.exit()
+                print("Update completed! Quitting current file_checker and running file_checker_.py")
+                process = QProcess()
+                process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
+                sys.exit()
 
     def fetch_file_size(self, url):
         """Finds and returns size of requested GitHub file"""
