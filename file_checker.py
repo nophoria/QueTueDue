@@ -33,7 +33,7 @@ CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config")
 ROOT_PATH = os.path.dirname(__file__)
 
 # Checking if update happened previously
-if __name__ == "file_checker_.py":  # True if renamed and ran during an update
+if os.path.basename == "file_checker_.py":  # True if renamed and ran during an update
     print("Detected a previous update, removing and renaming file_checker.py")
     print("Removing old file_checker...")
     if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
