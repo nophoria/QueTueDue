@@ -227,7 +227,7 @@ class CheckSysFiles(QThread):
 
             print("Checking for old update .temp folder...")
             if os.path.exists(os.path.join(ROOT_PATH, ".temp")):
-                os.removetree(os.path.join(ROOT_PATH, ".temp"))
+                shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
                 print("Removed old update .temp folder.")
 
             with open(f"{target_version}.zip", "wb") as f:
@@ -312,6 +312,8 @@ class PromptBetaUpdate(QDialog):
         self.setLayout(self.layout)
 
     def close_app(self):
+        global target_version
+        target_version = newest_version
         thread.check_files()
         self.close()
 
@@ -351,6 +353,8 @@ class PromptUpdate(QDialog):
         self.setLayout(self.layout)
 
     def close_app(self):
+        global target_version
+        target_version = newest_version
         thread.check_files()
         self.close()
 
