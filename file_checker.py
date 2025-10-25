@@ -51,6 +51,17 @@ if __name__ == "file_checker_.py":  # True if renamed and ran during an update
 
 
 # Define variables
+branch = False
+
+if "-b" in sys.argv:
+    index = sys.argv.index("-b")
+    if index + 1 < len(sys.argv):
+        branch = sys.argv[index + 1]
+elif "--branch" in sys.argv:
+    index = sys.argv.index("--branch")
+    if index + 1 < len(sys.argv):
+        branch = sys.argv[index + 1]
+
 r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags")
 if r.status_code == 200:
     tags = r.json()
@@ -174,6 +185,12 @@ class CheckSysFiles(QThread):
             for file, url_file in zip(files, url_files):
                 if not os.path.exists(file):
                     try:
+                        if branch:
+                            r = requests.get(
+                                f"https://github.com/nophoria/QueTueDue/raw/{branch}/{url_file}",
+                                headers={"Accept": "application/vnd.github.v3.raw"},
+                                stream=True,
+                            )
                         r = requests.get(
                             f"https://github.com/nophoria/QueTueDue/raw/refs/tags/{target_version}/{url_file}",
                             headers={"Accept": "application/vnd.github.v3.raw"},
