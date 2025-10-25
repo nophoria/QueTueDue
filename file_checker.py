@@ -191,11 +191,12 @@ class CheckSysFiles(QThread):
                                 headers={"Accept": "application/vnd.github.v3.raw"},
                                 stream=True,
                             )
-                        r = requests.get(
-                            f"https://github.com/nophoria/QueTueDue/raw/refs/tags/{target_version}/{url_file}",
-                            headers={"Accept": "application/vnd.github.v3.raw"},
-                            stream=True,
-                        )
+                        else:
+                            r = requests.get(
+                                f"https://github.com/nophoria/QueTueDue/raw/refs/tags/{target_version}/{url_file}",
+                                headers={"Accept": "application/vnd.github.v3.raw"},
+                                stream=True,
+                            )
 
                         print(file)
                         print(url_file)
@@ -254,53 +255,56 @@ class CheckSysFiles(QThread):
                 f.write(r.content)
                 print(f"{target_version}.zip successfully downloaded and written!")
 
-            print("Extracting zip...")
+            print("Extracting files to .temp folder...")
+            if os.path.exists(os.path.join(ROOT_PATH, ".temp")):
+                shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
+
             with zipfile.ZipFile(os.path.join(ROOT_PATH, f"{target_version}.zip")) as z:
-                print("Retrieving paths...")
-                for member in z.infolist():
-                    print(member)
-                    if member.is_dir():
-                        print("Skipped, dir detected.")
-                        continue
+                for file in z.infolist():
+                    if file.is_dir():
+                        print(f"{file} has been detected as a folder, not a file. Skipping...")
+                        continue  # Skip folders
 
-                    parts = member.filename.split("/", 1)  # Ignore top level folder (nophoria-QueTueDue-*)
-                    if len(parts) == 2:
-                        rel_path = parts[1]
-                    else:
-                        rel_path = parts[0]
+                    print(f"Extracting {file} to .temp...")
+                    z.extract(file, path=os.path.join(ROOT_PATH, ".temp"))  # Extract to .temp
 
-                    if rel_path == "file_checker.py":
-                        print("file_checker.py detected! Renaming...")
-                        rel_path = "file_checker_.py"
+            print("Renaming file_checker.py in .temp folder...")
+            for folder in os.listdir(os.path.join(ROOT_PATH, ".temp")):
+                if re.match(r"nophoria-QueTueDue-.*", folder):
+                    global zip_folder
+                    zip_folder = os.path.join(ROOT_PATH, ".temp", folder)
+                    print("Zip folder: ", zip_folder)
+                    print("Exists? ", os.path.exists(zip_folder))
+                    break
 
-                    print("Making file paths...")
-                    extract_path = os.path.join(ROOT_PATH, ".temp", rel_path)
-                    os.makedirs(os.path.dirname(extract_path), exist_ok=True)
-                    print("Zip successfully extracted to .temp!")
+            for root, dirs, files in os.walk(zip_folder):
+                for file in files:
+                    src_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(src_path, zip_folder)
+                    dst_path = os.path.join(ROOT_PATH, rel_path)
+                    print(f"""
+                    Source:      {src_path}
+                    Relative:    {rel_path}
+                    Destination: {dst_path}""")
 
-                    print("Extracting zip files...")
-                    print("DO NOT QUIT; overwriting files...")
-                    print(f"Writing {member.filename} to {extract_path}")
-                    with z.open(member) as source_file, open(extract_path, "wb") as target_file:
-                        print(f"Overwriting {target_file} with {source_file}...")
-                        if os.path.exists(os.path.join(ROOT_PATH, rel_path)) and rel_path != "file_checker_.py":
-                            print(f"Removing {target_file}...")
-                            os.remove(os.path.join(ROOT_PATH, rel_path))
-                        shutil.copyfileobj(source_file, target_file)
-                        print("File overwritten!")
+                    if file == "file_checker.py":
+                        dst_path = os.path.join(ROOT_PATH, "file_checker_.py")
+                        print(f"file_checker.py detected! Destination is now {dst_path}")
 
-                print("Cleaning up...")
-                os.remove(os.path.join(ROOT_PATH, f"{target_version}.zip"))
-                print("Zip removed!")
+                    os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                    print(f"Moving {src_path} to {dst_path}...")
+                    shutil.move(src_path, dst_path)
+                    print("Moved successfully!")
 
-                print("Update completed! Quitting current file_checker and running file_checker_.py")
-                print("Moving file_checker_.py to root")
-                shutil.move(
-                    os.path.join(ROOT_PATH, ".temp", "file_checker_.py"), os.path.join(ROOT_PATH, "file_checker_.py")
-                )
-                process = QProcess()
-                process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
-                sys.exit()
+            print("Cleaning up...")
+            shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
+            print(".temp folder removed!")
+            os.remove(os.path.join(ROOT_PATH, f"{target_version}.zip"))
+
+            print("Update completed! Quitting current file_checker and running file_checker_.py")
+            process = QProcess()
+            process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
+            sys.exit()
 
     def fetch_file_size(self, url):
         """Finds and returns size of requested GitHub file"""
