@@ -261,7 +261,7 @@ class CheckSysFiles(QThread):
                     print(f"Writing {member.filename} to {extract_path}")
                     with z.open(member) as source_file, open(extract_path, "wb") as target_file:
                         print(f"Overwriting {target_file} with {source_file}...")
-                        if os.path.exists and rel_path != "file_checker_.py":
+                        if os.path.exists(os.path.join(ROOT_PATH, rel_path)) and rel_path != "file_checker_.py":
                             print(f"Removing {target_file}...")
                             os.remove(os.path.join(ROOT_PATH, rel_path))
                         shutil.copyfileobj(source_file, target_file)
