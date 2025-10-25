@@ -63,15 +63,12 @@ else:
 if __name__ == "file_checker_.py":  # True if renamed and ran during an update
     print("Detected a previous update, removing and renaming file_checker.py")
     print("Removing old file_checker...")
-    try:
+    if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
         os.remove(os.path.join(ROOT_PATH, "file_checker.py"))
-    except FileNotFoundError:
-        print("Old file_checker not found.")
-
-    print("Removed old file_checker.")
+        print("Removed old file_checker.")
 
     print("Renaming self: file_checker_.py -> file_checker.py")
-    os.rename(os.path.abspath(ROOT_PATH), "file_checker.py")
+    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), "file_checker.py")
     print("Renamed self.")
 
     print("Starting file_checker as normal...")
@@ -251,6 +248,7 @@ class CheckSysFiles(QThread):
                         rel_path = parts[0]
 
                     if rel_path == "file_checker.py":
+                        print("file_checker.py detected! Renaming...")
                         rel_path = "file_checker_.py"
 
                     print("Making file paths...")
@@ -260,8 +258,12 @@ class CheckSysFiles(QThread):
 
                     print("Extracting zip files...")
                     print("DO NOT QUIT; overwriting files...")
+                    print(f"Writing {member.filename} to {extract_path}")
                     with z.open(member) as source_file, open(extract_path, "wb") as target_file:
                         print(f"Overwriting {target_file} with {source_file}...")
+                        if os.path.exists and rel_path != "file_checker_.py":
+                            print(f"Removing {target_file}...")
+                            os.remove(os.path.join(ROOT_PATH, rel_path))
                         shutil.copyfileobj(source_file, target_file)
                         print("File overwritten!")
 
@@ -270,6 +272,10 @@ class CheckSysFiles(QThread):
                 print("Zip removed!")
 
                 print("Update completed! Quitting current file_checker and running file_checker_.py")
+                print("Moving file_checker_.py to root")
+                shutil.move(
+                    os.path.join(ROOT_PATH, ".temp", "file_checker_.py"), os.path.join(ROOT_PATH, "file_checker_.py")
+                )
                 process = QProcess()
                 process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
                 sys.exit()
