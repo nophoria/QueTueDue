@@ -1,6 +1,6 @@
-# QueTueDue v0.6.0-b1
+# QueTueDue v0.6-b1
 
-__version__ = "0.6.0-b1"
+__version__ = "v0.6-b1"
 
 # Import dependecies
 import os
@@ -597,7 +597,7 @@ class MainWindow(QMainWindow):
         # Widgets
         self.spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.about_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
-        self.about_label = QLabel(f"QueTueDue V{__version__}")
+        self.about_label = QLabel(f"QueTueDue {__version__}")
         self.about_button = QPushButton("About")
         self.settings_button = QPushButton("Settings")
         self.about_layout.addWidget(self.about_label)
