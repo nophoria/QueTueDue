@@ -353,6 +353,7 @@ class PromptBetaUpdate(QDialog):
         global target_version
         target_version = newest_version
         self.yes_button.setText("Updating...")
+        QApplication.processEvents()
         thread.update()
 
 
@@ -394,6 +395,7 @@ class PromptUpdate(QDialog):
         global target_version
         target_version = newest_version
         self.yes_button.setText("Updating...")
+        QApplication.processEvents()
         thread.update()
 
 
