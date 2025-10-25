@@ -1,4 +1,4 @@
-# QueTueDue v0.6-b1
+# QueTueDue v0.6-b2
 
 __version__ = "v0.6-b2"
 
