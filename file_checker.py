@@ -32,33 +32,6 @@ ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config")
 ROOT_PATH = os.path.dirname(__file__)
 
-# Define variables
-if os.path.exists(os.path.join(os.path.dirname(__file__), "quetuedue.pyw")):
-    with open(os.path.join(os.path.dirname(__file__), "quetuedue.pyw"), "r", encoding="utf-8") as f:
-        content = f.read()
-
-    qtd_ver = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.MULTILINE)
-
-    if qtd_ver:
-        target_version = qtd_ver.group(1)
-    else:
-        taret_version = None
-        print("Could not find __version__ in quetuedue.py, is the file missing?")
-
-    print("Target ver:  ", target_version)
-
-r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags")
-if r.status_code == 200:
-    tags = r.json()
-    if tags:
-        newest_version = tags[0]["name"]
-        print("Latest ver:  ", newest_version)
-        print("Current ver: ", target_version)
-    else:
-        print("No versions found")
-else:
-    print("Failed to fetch versions")
-
 # Checking if update happened previously
 if __name__ == "file_checker_.py":  # True if renamed and ran during an update
     print("Detected a previous update, removing and renaming file_checker.py")
@@ -75,6 +48,38 @@ if __name__ == "file_checker_.py":  # True if renamed and ran during an update
     process = QProcess()
     process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
     sys.exit()
+
+
+# Define variables
+r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags")
+if r.status_code == 200:
+    tags = r.json()
+    if tags:
+        newest_version = tags[0]["name"]
+    else:
+        print("No versions found")
+else:
+    print("Failed to fetch versions")
+
+if os.path.exists(os.path.join(os.path.dirname(__file__), "quetuedue.pyw")):
+    with open(os.path.join(os.path.dirname(__file__), "quetuedue.pyw"), "r", encoding="utf-8") as f:
+        content = f.read()
+
+    qtd_ver = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.MULTILINE)
+
+    if qtd_ver:
+        target_version = qtd_ver.group(1)
+    else:
+        target_version = newest_version
+        print("Could not find __version__ in quetuedue.py, is the file missing?")
+
+    print("Target ver:  ", target_version)
+else:
+    target_version = newest_version
+    print("Could not find __version__ in quetuedue.py, is the file missing?")
+
+print("Latest ver:  ", newest_version)
+print("Current ver: ", target_version)
 
 
 class CheckSysFiles(QThread):
