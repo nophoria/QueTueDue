@@ -243,7 +243,7 @@ class CheckSysFiles(QThread):
                     print("File overwritten!")
 
                 print("Update completed! Opening QueTueDue after checking files.")
-                self.check_sys_files()
+                self.check_files()
 
     def fetch_file_size(self, url):
         """Finds and returns size of requested GitHub file"""

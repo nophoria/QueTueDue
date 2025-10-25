@@ -1,6 +1,6 @@
 # QueTueDue v0.6-b1
 
-__version__ = "v0.6-b1"
+__version__ = "v0.6-b2"
 
 # Import dependecies
 import os
