@@ -32,8 +32,10 @@ ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config")
 ROOT_PATH = os.path.dirname(__file__)
 
+print(os.path.basename(__file__))
+
 # Checking if update happened previously
-if os.path.basename == "file_checker_.py":  # True if renamed and ran during an update
+if os.path.splitext(os.path.basename(__file__))[0] == "file_checker_":  # True if renamed and ran during an update
     print("Detected a previous update, removing and renaming file_checker.py")
     print("Removing old file_checker...")
     if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
@@ -230,6 +232,12 @@ class CheckSysFiles(QThread):
             print("Current version is a beta and so is update, prompting user to upgrade to a beta update.")
             self.update_needed.emit("beta")
 
+        elif re.search(r"-b\d+$", newest_version) and not re.search(
+            r"-b\d+$", target_version
+        ):  # True if only newest is beta
+            print("Update is from stable to beta, skipping...")
+            return
+
         else:
             print("Prompting for update...")
             self.update_needed.emit("stable")
@@ -250,7 +258,7 @@ class CheckSysFiles(QThread):
                 shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
                 print("Removed old update .temp folder.")
 
-            with open(f"{target_version}.zip", "wb") as f:
+            with open(os.path.join(ROOT_PATH, f"{target_version}.zip"), "wb") as f:
                 print("Writing zip...")
                 f.write(r.content)
                 print(f"{target_version}.zip successfully downloaded and written!")
