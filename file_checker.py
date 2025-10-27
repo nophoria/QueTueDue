@@ -46,7 +46,6 @@ if os.path.splitext(os.path.basename(__file__))[0] == "file_checker_":  # True i
 
     print("Renaming self: file_checker_.py -> file_checker.py")
     os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
-    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
     print("Renamed self.")
 
     print("Starting file_checker as normal...")
