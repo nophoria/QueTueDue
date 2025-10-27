@@ -408,32 +408,6 @@ class DelAllSureWindow(QWidget):
         self.app_window.close()
 
 
-class FetchFileError(QDialog):
-    """Dialog that appears if fetching a file through
-    MainWindow.download_file() fails.
-    """
-
-    def __init__(self, MainWindow_instance):
-        super().__init__()
-        self.setWindowTitle("Error")
-
-        self.app_window = MainWindow_instance
-        self.layout = QVBoxLayout()
-        self.label = QLabel("Could not download file :(")
-        self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        self.label.setFont(QFont(self.app_window.families[0], 32))
-        self.sub_label = QLabel(
-            "There was an error while trying to fetch the requested file. Check your internet connection."
-        )
-        self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        self.button = QPushButton("OK")
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.sub_label)
-        self.layout.addWidget(self.button)
-        self.button.clicked.connect(self.close)
-        self.setLayout(self.layout)
-
-
 class FontError(QDialog):
     """Dialog that appears if a font file is missing."""
 
@@ -448,7 +422,7 @@ class FontError(QDialog):
         self.label = QLabel(f"The font {font} is missing.")
         self.label.setFont(QFont("", 32))
         self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        self.sub_label = QLabel("Would you like to download it from GitHub?")
+        self.sub_label = QLabel("Please restart QueTueDue to attempt downloading.")
         self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         self.yes_button = QPushButton("Download")
         self.no_button = QPushButton("Launch Anyway")
@@ -468,74 +442,10 @@ class FontError(QDialog):
         self.close()
 
     def start_download(self):
-        """Updates dialog to show download start then calls the
-        MainWindow's download_file function.
-        """
-        self.yes_button.setText("Downloading...")
-        self.yes_button.setEnabled(False)
-        self.no_button.setEnabled(False)
-
-        QApplication.processEvents()
-
-        self.download_result(self.app_window.download_file(self.url, self.font, FONT_PATH))
-
-    def download_result(self, result):
-        """Gives ui feedback if download completed."""
-        if result:
-            self.sub_label.setText("Download Completed!")
-            self.yes_button.setText("Close")
-            self.yes_button.setEnabled(True)
-            self.yes_button.clicked.connect(self.exit)
-            self.no_button.setEnabled(False)
-        else:
-            self.yes_button.setEnabled(True)
-            self.yes_button.setText("Download")
-            self.no_button.setEnabled(True)
-            self.sub_label.setText("Download Failed, try again.")
-
-
-class FetchFile(QDialog):
-    """Dialog that appears if a file is missing."""
-
-    def __init__(self, MainWindow_instance, file, filepath):
-        super().__init__()
-        self.setWindowTitle("Error")
-        self.app_window = MainWindow_instance
-        self.file = file
-
-        self.dlg_layout = QVBoxLayout()
-        self.dlg_btn_layout = QHBoxLayout()
-        self.label = QLabel(f"The file {file} is missing.")
-        self.label.setFont(QFont("", 32))
-        self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        self.sub_label = QLabel("Would you like to download it from GitHub?")
-        self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        self.yes_button = QPushButton("Download")
-        self.no_button = QPushButton("Launch Anyway")
-        self.url = f"https://github.com/nophoria/QueTueDue/raw/refs/heads/Experimental/{filepath}"
-        self.yes_button.clicked.connect(self.start_download)
-        self.no_button.clicked.connect(self.exit)
-        self.dlg_btn_layout.addWidget(self.yes_button)
-        self.dlg_btn_layout.addWidget(self.no_button)
-        self.dlg_layout.addWidget(self.label)
-        self.dlg_layout.addWidget(self.sub_label)
-        self.dlg_layout.addLayout(self.dlg_btn_layout)
-
-        self.setLayout(self.dlg_layout)
-
-    def exit(self):
-        """Closes dialog on press of no_button."""
-        self.close()
-
-    def start_download(self):
-        """Updates dialog to show download has been started then calls
-        MainWindow's download_file function to fetch the file off GitHub
-        """
-        self.yes_button.setText("Downloading...")
-        self.yes_button.setEnabled(False)
-        self.no_button.setEnabled(False)
-        QApplication.processEvents()
-        self.download_result(self.app_window.download_file(self.url, self.font, FONT_PATH))
+        """Restarts QueTueDue"""
+        process = QProcess()
+        process.startDetached("python", [os.path.join(ROOT_PATH, "quetuedue.pyw")])
+        sys.exit()
 
     def download_result(self, result):
         """Gives ui feedback if download completed."""
@@ -592,6 +502,20 @@ class MainWindow(QMainWindow):
         self.done_layout = QVBoxLayout()
         self.about_layout = QHBoxLayout()
 
+        # Widgets
+        self.header_layout = QHBoxLayout()
+        self.header_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.header_menu_button = QPushButton("Menu", QIcon(os.path.join(ICON_PATH, f"header_menuicon{THEME}.png")))
+        self.header_menu_button.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        self.header_label = QLabel("QueTueDue")
+        self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.header_label.setContentsMargins(0, 4, 0, 4)
+        self.header_layout.addWidget(self.header_menu_button)
+        self.header_layout.addWidget(self.header_label)
+        self.header_separator = separator("h")
+        self.main_layout.addLayout(self.header_layout)
+        self.main_layout.addWidget(self.header_separator)
+
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.tasks_layout.addLayout(self.todo_layout)
@@ -608,19 +532,12 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(self.tasks_layout)
 
-        # Widgets
-        self.spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.about_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         self.about_label = QLabel(f"QueTueDue {__version__}")
-        self.about_button = QPushButton("About")
-        self.settings_button = QPushButton("Settings")
-        self.about_layout.addWidget(self.about_label)
-        self.about_layout.addItem(self.about_spacer)
-        self.about_layout.addWidget(self.about_button)
-        self.about_layout.addWidget(self.settings_button)
-        self.main_layout.addItem(self.spacer)
-        self.main_layout.addWidget(separator("h"))
-        self.main_layout.addLayout(self.about_layout)
+        self.about_separator = separator("h")
+        self.main_layout.addItem(self.about_spacer)
+        self.main_layout.addWidget(self.about_separator)
+        self.main_layout.addWidget(self.about_label)
 
         self.todo_header = QLabel("To-Do")
         try:
@@ -844,34 +761,6 @@ class MainWindow(QMainWindow):
                 f.writelines(lines)
             with open(TODO_PATH, "a", encoding="utf-8") as f:
                 f.write(f"\nd{text}")
-
-    def download_file(self, url, filename, destination):
-        """Uses requests to fetch a chosen GitHub file (url), name
-        it (filename) and downloads the file to the defined
-        destination (destination).
-        """
-        try:
-            r = requests.get(url, headers={"Accept": "application/vnd.github.v3.raw"}, stream=True)
-        except requests.exceptions.RequestException:
-            dlg = FetchFileError(self)
-            dlg.exec()
-            return False
-
-        if r.status_code != 200:
-            dlg = FetchFileError(self)
-            dlg.exec()
-            return False
-
-        os.makedirs(destination, exist_ok=True)
-
-        with open(os.path.join(f"{destination}", f"{filename}"), "wb") as f:
-            f.write(r.content)
-            return True
-
-    def fetch_file_size(self, url):
-        """Finds and returns size of requested GitHub file"""
-        r = requests.get(url, stream=True)
-        return int(r.headers.get("Content-Length", 0))
 
 
 app = QApplication(sys.argv)
