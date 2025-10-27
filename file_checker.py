@@ -2,6 +2,7 @@
 
 # Import dependencies
 import os
+import pathlib
 import re
 import shutil
 import sys
@@ -23,6 +24,7 @@ from PyQt6.QtWidgets import (
     QDialog,
     QHBoxLayout,
     QLabel,
+    QProgressBar,
     QPushButton,
     QVBoxLayout,
 )
@@ -101,7 +103,8 @@ class CheckSysFiles(QThread):
     """
 
     finished = pyqtSignal(bool)  # True if all files exist after requesting
-    update_needed = pyqtSignal(str)
+    update_needed = pyqtSignal(str)  # Whether to send out a beta or a stable update prompt
+    update_progress = pyqtSignal(str, int, int, int)  # What the progress label should say on the update prompt
 
     def __init__(self):
         super().__init__()
@@ -224,6 +227,8 @@ class CheckSysFiles(QThread):
         tag, also, if the current target_version end is b* then prompt
         the user also on beta updates.
         """
+        global target_version
+
         if target_version == newest_version:
             print("Same version, skipping update...")
             return
@@ -236,6 +241,7 @@ class CheckSysFiles(QThread):
             r"-b\d+$", target_version
         ):  # True if only newest is beta
             print("Update is from stable to beta, skipping...")
+            target_version = newest_version
             return
 
         else:
@@ -244,6 +250,7 @@ class CheckSysFiles(QThread):
 
     def update(self):
         print(f"Requesting for {target_version}.zip")
+        self.update_progress.emit("Retrieving files", 1, 0, 1)
         r = requests.get(
             f"https://api.github.com/repos/nophoria/QueTueDue/zipball/{target_version}",
             headers={"Accept": "application/vnd.github.v3+json"},
@@ -252,26 +259,38 @@ class CheckSysFiles(QThread):
 
         if r.status_code == 200:
             print("Downloaded successfully!")
+            self.update_progress.emit("Retrieving files", 1, 1, 1)
 
             print("Checking for old update .temp folder...")
+            self.update_progress.emit("Removing older update files", 2, 0, 1)
             if os.path.exists(os.path.join(ROOT_PATH, ".temp")):
                 shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
                 print("Removed old update .temp folder.")
+            self.update_progress.emit("Removing older update files", 2, 1, 1)
 
             with open(os.path.join(ROOT_PATH, f"{target_version}.zip"), "wb") as f:
                 print("Writing zip...")
+                self.update_progress.emit("Gathering update files", 3, 0, 1)
                 f.write(r.content)
                 print(f"{target_version}.zip successfully downloaded and written!")
+                self.update_progress.emit("Gathering update files", 3, 1, 1)
 
             print("Extracting files to .temp folder...")
-            if os.path.exists(os.path.join(ROOT_PATH, ".temp")):
-                shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
-
             with zipfile.ZipFile(os.path.join(ROOT_PATH, f"{target_version}.zip")) as z:
+                file_num = 0
                 for file in z.infolist():
+                    file_num += 1
                     if file.is_dir():
                         print(f"{file} has been detected as a folder, not a file. Skipping...")
+                        file_num -= 1  # Subtract of total files if not a file
                         continue  # Skip folders
+
+                    self.update_progress.emit(
+                        "Extracting files...",
+                        4,
+                        file_num,
+                        sum(1 for file in pathlib.Path(os.path.join(ROOT_PATH, ".temp")).rglob("*") if file.is_file()),
+                    )
 
                     print(f"Extracting {file} to .temp...")
                     z.extract(file, path=os.path.join(ROOT_PATH, ".temp"))  # Extract to .temp
@@ -285,8 +304,11 @@ class CheckSysFiles(QThread):
                     print("Exists? ", os.path.exists(zip_folder))
                     break
 
+            print("Moving files...")
+            file_num = 0
             for root, dirs, files in os.walk(zip_folder):
                 for file in files:
+                    file_num += 1
                     src_path = os.path.join(root, file)
                     rel_path = os.path.relpath(src_path, zip_folder)
                     dst_path = os.path.join(ROOT_PATH, rel_path)
@@ -296,20 +318,37 @@ class CheckSysFiles(QThread):
                     Destination: {dst_path}""")
 
                     if file == "file_checker.py":
+                        continue
                         dst_path = os.path.join(ROOT_PATH, "file_checker_.py")
                         print(f"file_checker.py detected! Destination is now {dst_path}")
+
+                    if file == "to-do.txt" or "config.config":
+                        print(f"Skipped user modified files: {file}")
+                        file_num -= 1
+                        continue
 
                     os.makedirs(os.path.dirname(dst_path), exist_ok=True)
                     print(f"Moving {src_path} to {dst_path}...")
                     shutil.move(src_path, dst_path)
                     print("Moved successfully!")
+                    self.update_progress.emit(
+                        "Moving and overwriting files...",
+                        5,
+                        file_num,
+                        sum(1 for file in pathlib.Path(os.path.join(ROOT_PATH, ".temp")).rglob("*") if file.is_file()),
+                    )
 
             print("Cleaning up...")
+            self.update_progress.emit("Cleaning up...", 6, 0, 2)
             shutil.rmtree(os.path.join(ROOT_PATH, ".temp"))
             print(".temp folder removed!")
+            self.update_progress.emit("Cleaning up...", 6, 1, 2)
             os.remove(os.path.join(ROOT_PATH, f"{target_version}.zip"))
+            print("Zip file removed!")
+            self.update_progress.emit("Cleaning up...", 6, 2, 2)
 
             print("Update completed! Quitting current file_checker and running file_checker_.py")
+            self.update_progress.emit("Finished!", 7, 1, 1)
             process = QProcess()
             process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker_.py")])
             sys.exit()
@@ -340,6 +379,11 @@ class PromptBetaUpdate(QDialog):
             "\nThis beta update has only been suggested to you as you are currently on a beta version."
         )
         self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMaximum(7)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setFormat("Starting update... (Action 0 of 7 - %p%)")
+        self.progress_bar.hide()
         self.yes_button = QPushButton("Update")
         self.no_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.yes_button)
@@ -349,6 +393,7 @@ class PromptBetaUpdate(QDialog):
         self.layout.addLayout(self.button_layout)
         self.no_button.clicked.connect(self.close_app)
         self.yes_button.clicked.connect(self.update)
+        thread.update_progress.connect(self.update_progress_handler)
         self.setLayout(self.layout)
 
     def close_app(self):
@@ -363,6 +408,12 @@ class PromptBetaUpdate(QDialog):
         self.yes_button.setText("Updating...")
         QApplication.processEvents()
         thread.update()
+
+    def update_progress_handler(self, update_progress, action_num, value, maximum):
+        self.progress_bar.show()
+        self.progress_bar.setValue(value)
+        self.progress_bar.setMaximum(maximum)
+        self.progress_bar.setFormat(f"{update_progress}... (Action {action_num} of 7 - %p%)")
 
 
 class PromptUpdate(QDialog):
@@ -382,15 +433,22 @@ class PromptUpdate(QDialog):
         self.label.setFont(QFont("", 32))
         self.sub_label = QLabel(f"Would you like to update from\n{target_version} to {newest_version}?")
         self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.progress_bar = QProgressBar()
+        self.progress_bar.setMaximum(7)
+        self.progress_bar.setTextVisible(True)
+        self.progress_bar.setFormat("Starting update... (Action 0 of 7 - %p%)")
+        self.progress_bar.hide()
         self.yes_button = QPushButton("Update")
         self.no_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.yes_button)
         self.button_layout.addWidget(self.no_button)
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.sub_label)
+        self.layout.addWidget(self.progress_bar)
         self.layout.addLayout(self.button_layout)
         self.no_button.clicked.connect(self.close_app)
         self.yes_button.clicked.connect(self.update)
+        thread.update_progress.connect(self.update_progress_handler)
         self.setLayout(self.layout)
 
     def close_app(self):
@@ -405,6 +463,12 @@ class PromptUpdate(QDialog):
         self.yes_button.setText("Updating...")
         QApplication.processEvents()
         thread.update()
+
+    def update_progress_handler(self, update_progress, action_num, value, maximum):
+        self.progress_bar.show()
+        self.progress_bar.setValue(value)
+        self.progress_bar.setMaximum(maximum)
+        self.progress_bar.setFormat(f"{update_progress}... (Action {action_num} of 7 - %p%)")
 
 
 class FetchFileError(QDialog):
