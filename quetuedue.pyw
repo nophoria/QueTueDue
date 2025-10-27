@@ -8,8 +8,16 @@ import re
 import sys
 
 import requests
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QFont, QFontDatabase, QIcon
+from PyQt6.QtCore import (
+    QProcess,
+    Qt,
+)
+from PyQt6.QtGui import (
+    QAction,
+    QFont,
+    QFontDatabase,
+    QIcon,
+)
 from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -37,6 +45,12 @@ TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "to-do.txt")
 ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 USER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "config.config")
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "default.config")
+ROOT_PATH = os.path.dirname(__file__)
+
+if "-n" not in sys.argv and "--no-file-checking" not in sys.argv:
+    process = QProcess()
+    process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
+    sys.exit()
 
 
 def config_arg_load(keyword, acceptedValues):
