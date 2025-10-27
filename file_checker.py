@@ -254,7 +254,7 @@ class CheckSysFiles(QThread):
             print(f"-b/--branch detected, requesting for {branch}.zip")
             self.update_progress.emit(f"-b/--branch detected, retrieving files from {branch}", 1, 0, 1)
             r = requests.get(
-                f"https://api.github.com/repos/nophoria/QueTueDue/zipball/{branch}",
+                f"https://github.com/nophoria/QueTueDue/zipball/{branch}",
                 headers={"Accept": "application/vnd.github.v3+json"},
                 stream=True,
             )
