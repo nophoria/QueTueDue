@@ -46,6 +46,7 @@ if os.path.splitext(os.path.basename(__file__))[0] == "file_checker_":  # True i
 
     print("Renaming self: file_checker_.py -> file_checker.py")
     os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
+    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
     print("Renamed self.")
 
     print("Starting file_checker as normal...")
@@ -249,13 +250,22 @@ class CheckSysFiles(QThread):
             self.update_needed.emit("stable")
 
     def update(self):
-        print(f"Requesting for {target_version}.zip")
-        self.update_progress.emit("Retrieving files", 1, 0, 1)
-        r = requests.get(
-            f"https://api.github.com/repos/nophoria/QueTueDue/zipball/{target_version}",
-            headers={"Accept": "application/vnd.github.v3+json"},
-            stream=True,
-        )
+        if branch:
+            print(f"-b/--branch detected, requesting for {branch}.zip")
+            self.update_progress.emit(f"-b/--branch detected, retrieving files from {branch}", 1, 0, 1)
+            r = requests.get(
+                f"https://api.github.com/repos/nophoria/QueTueDue/zipball/{target_version}",
+                headers={"Accept": "application/vnd.github.v3+json"},
+                stream=True,
+            )
+        else:
+            print(f"Requesting for {target_version}.zip")
+            self.update_progress.emit("Retrieving files", 1, 0, 1)
+            r = requests.get(
+                f"https://api.github.com/repos/nophoria/QueTueDue/zipball/{branch}",
+                headers={"Accept": "application/vnd.github.v3+json"},
+                stream=True,
+            )
 
         if r.status_code == 200:
             print("Downloaded successfully!")
@@ -318,11 +328,10 @@ class CheckSysFiles(QThread):
                     Destination: {dst_path}""")
 
                     if file == "file_checker.py":
-                        continue
                         dst_path = os.path.join(ROOT_PATH, "file_checker_.py")
                         print(f"file_checker.py detected! Destination is now {dst_path}")
 
-                    if file == "to-do.txt" or "config.config":
+                    if file == "to-do.txt" or file == "config.config":
                         print(f"Skipped user modified files: {file}")
                         file_num -= 1
                         continue
@@ -383,7 +392,7 @@ class PromptBetaUpdate(QDialog):
         self.progress_bar.setMaximum(7)
         self.progress_bar.setTextVisible(True)
         self.progress_bar.setFormat("Starting update... (Action 0 of 7 - %p%)")
-        self.progress_bar.hide()
+        self.progress_bar.setVisible(False)
         self.yes_button = QPushButton("Update")
         self.no_button = QPushButton("Cancel")
         self.button_layout.addWidget(self.yes_button)
@@ -410,10 +419,11 @@ class PromptBetaUpdate(QDialog):
         thread.update()
 
     def update_progress_handler(self, update_progress, action_num, value, maximum):
-        self.progress_bar.show()
+        self.progress_bar.setVisible(True)
         self.progress_bar.setValue(value)
         self.progress_bar.setMaximum(maximum)
         self.progress_bar.setFormat(f"{update_progress}... (Action {action_num} of 7 - %p%)")
+        QApplication.processEvents()
 
 
 class PromptUpdate(QDialog):
