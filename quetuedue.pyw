@@ -35,6 +35,7 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QStackedLayout,
     QSystemTrayIcon,
+    QTabBar,
     QToolBar,
     QVBoxLayout,
     QWidget,
@@ -312,13 +313,13 @@ class MarkAllAsDoneWindow(QWidget):
             tasks = []
 
             for line in f.readlines():
-                if line:
+                if line.strip() and not line.strip().startswith("d"):
                     tasks.append(line[1:])
 
         if len(tasks) > 0:
             label_text += f'{tasks[0]}"?'
         else:
-            label_text = "There are no tasks"
+            label_text = "There are no tasks in the To-Do or In Prog. categories."
             self.yes_button.setEnabled(False)
             self.yes_button.setText("No tasks")
 
@@ -602,7 +603,7 @@ class MainWindow(QMainWindow):
 
         # Toolbar
         self.toolbar = QToolBar("Utilities")
-        self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
+        # self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
         self.add_action = QAction(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add", self)
         self.add_action.setStatusTip("Add a new task")
@@ -647,6 +648,21 @@ class MainWindow(QMainWindow):
         self.in_prog_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.done_layout = QVBoxLayout()
         self.done_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.tabbar_layout = QHBoxLayout()
+
+        # Tabbar
+        self.tabbar = QTabBar()
+        self.tabbar.setShape(QTabBar.Shape.RoundedWest)
+        self.tabbar.currentChanged.connect(self.change_page)
+        self.tabbar.setFont(QFont(self.families[4][0], 12))
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, "logo-mono.png")), "Tasks")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Del")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")), "Del All")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_done_icon_{THEME}.png")), "Del Done")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"mark_all_as_done_icon_{THEME}.png")), "Mark All Done")
+        self.tabbar_layout.addWidget(self.tabbar)
+        self.tabbar_layout.addLayout(self.window_layout)
 
         # Widgets
         self.header_layout = QHBoxLayout()
@@ -680,7 +696,7 @@ class MainWindow(QMainWindow):
         self.header_menu_button.setMenu(self.header_menu)
 
         self.header_page_label = QLabel("Tasks")
-        self.header_page_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.header_page_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.header_page_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
         self.header_page_label.setFont(QFont(self.families[4][0]))
 
@@ -693,20 +709,18 @@ class MainWindow(QMainWindow):
         self.header_label.setFont(QFont(self.families[4], 12))
 
         self.header_sub_label = QLabel(f"{__version__}")
-        self.header_sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.header_sub_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
         self.header_sub_label_palette = self.header_sub_label.palette()
         self.header_sub_label_palette.setColor(QPalette.ColorRole.WindowText, QColor(50, 50, 50))
         self.header_sub_label.setPalette(self.header_sub_label_palette)
         self.header_sub_label.setFont(QFont(self.families[4], 10))
 
-        self.header_title_layout.addWidget(self.header_label)
         self.header_title_layout.addWidget(self.header_sub_label)
+        self.header_title_layout.addWidget(self.header_label)
+        self.header_title_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
 
         self.header_layout.addLayout(self.header_menu_layout)
-        self.header_layout.addStretch()
         self.header_layout.addLayout(self.header_title_layout)
-        self.header_layout.addStretch()
-        self.header_layout.addSpacing((self.header_menu_layout.sizeHint().width()))
 
         self.header_separator = separator("h")
         self.window_layout.addLayout(self.header_layout)
@@ -772,20 +786,20 @@ class MainWindow(QMainWindow):
         self.del_page = DelWindow(self)
         self.stack_layout.addWidget(self.del_page)
 
+        self.del_all_page = DelAllWindow(self)
+        self.stack_layout.addWidget(self.del_all_page)
+
         self.mark_off_page = MarkAllAsDoneWindow(self)
         self.stack_layout.addWidget(self.mark_off_page)
 
         self.del_done_page = DelDoneWindow(self)
         self.stack_layout.addWidget(self.del_done_page)
 
-        self.del_all_page = DelAllWindow(self)
-        self.stack_layout.addWidget(self.del_all_page)
-
-        self.change_page(self.main_page, "Tasks")
+        self.change_page(0)
         self.window_layout.addLayout(self.stack_layout)
 
         self.window_wrapper = QWidget()
-        self.window_wrapper.setLayout(self.window_layout)
+        self.window_wrapper.setLayout(self.tabbar_layout)
         self.setCentralWidget(self.window_wrapper)
 
     def clear_layout(self, layout, start):
@@ -824,7 +838,7 @@ class MainWindow(QMainWindow):
                 task_text = line[1:].strip()
                 checkbox = QCheckBox(task_text)
 
-                max_width = max(50, int((self.width() / 3) - self.toolbar.width()))
+                max_width = max(50, int((self.width() / 3) - self.tabbar.width()))
                 checkbox.setMaximumWidth(max_width)
                 checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -869,6 +883,8 @@ class MainWindow(QMainWindow):
         if HIDE_WHEN_CLOSED == "True":
             e.ignore()
             self.hide()
+        else:
+            super().closeEvent(e)
 
     def open_popup_window(self, WindowInstance, checked=False):
         """Open the specified popup window (WindowInstance). This is used for the
@@ -940,20 +956,19 @@ class MainWindow(QMainWindow):
             with open(TODO_PATH, "a", encoding="utf-8") as f:
                 f.write(f"\nd{text}")
 
+        self.load_checkboxes()
+
     def resizeEvent(self, event):
         self.load_checkboxes()
         super().resizeEvent(event)
 
-    def change_page(self, page, header_label):
-        if self.stack_layout.currentWidget() == page:
-            self.stack_layout.setCurrentWidget(self.main_page)
-            self.header_page_label.setText("Tasks")
-            return
-        self.stack_layout.setCurrentWidget(page)
-        self.header_page_label.setText(header_label)
+    def change_page(self, index):
+        print(index)
+        self.stack_layout.setCurrentIndex(index)
 
 
 app = QApplication(sys.argv)
+app.setStyle("Fusion")
 mainWindow = MainWindow()
 mainWindow.show()
 app.exec()
