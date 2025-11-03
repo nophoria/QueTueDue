@@ -19,6 +19,7 @@ from PyQt6.QtGui import (
     QFontDatabase,
     QIcon,
     QPalette,
+    QPixmap,
 )
 from PyQt6.QtWidgets import (
     QApplication,
@@ -147,7 +148,7 @@ class AddWindow(QWidget):
             f.write(f"\nt{line}")
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
     def check_for_duplicates(self):
         """Constantly recieves what's in the self.input line edit and
@@ -172,7 +173,7 @@ class AddWindow(QWidget):
             self.yes_button.setText("Add")
 
     def exit(self):
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
 
 class DelWindow(QWidget):
@@ -243,10 +244,10 @@ class DelWindow(QWidget):
             f.writelines(lines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
     def exit(self):
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
 
 class MarkAllAsDoneWindow(QWidget):
@@ -301,7 +302,7 @@ class MarkAllAsDoneWindow(QWidget):
             f.writelines(lines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
     def gen_sub_label(self):
         """Changes the text on a label to mention first affected task
@@ -332,7 +333,7 @@ class MarkAllAsDoneWindow(QWidget):
 
     def exit(self):
         """Sets the app page to MainWindow's main_page"""
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
 
 class DelDoneWindow(QWidget):
@@ -417,10 +418,10 @@ class DelDoneWindow(QWidget):
             f.writelines(lines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
     def exit(self):
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
 
 class DelAllWindow(QWidget):
@@ -492,7 +493,7 @@ class DelAllWindow(QWidget):
 
     def exit(self):
         """Sets the app page to MainWindow's main_page"""
-        self.app_window.change_page(self.app_window.main_page, "Tasks")
+        self.app_window.change_page(0)
 
     def DelAllSureWindow(self):
         """Shows the confirm window pop-up."""
@@ -538,11 +539,11 @@ class DelAllSureWindow(QWidget):
             pass
 
         self.app_window.app_window.load_checkboxes()
-        self.app_window.app_window.change_page(self.app_window.app_window.main_page, "Tasks")
+        self.app_window.app_window.change_page(0)
         self.close()
 
     def exit(self):
-        self.app_window.app_window.change_page(self.app_window.app_window.main_page, "Tasks")
+        self.app_window.app_window.change_page(0)
         self.close()
 
 
@@ -601,41 +602,41 @@ class MainWindow(QMainWindow):
 
         self.tray.setContextMenu(self.tray_menu)
 
-        # Toolbar
-        self.toolbar = QToolBar("Utilities")
-        # self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
+        # # Toolbar
+        # self.toolbar = QToolBar("Utilities")
+        # # self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, self.toolbar)
 
-        self.add_action = QAction(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add", self)
-        self.add_action.setStatusTip("Add a new task")
-        self.add_action.triggered.connect(lambda: self.change_page(self.add_page, "Add a Task"))
+        # self.add_action = QAction(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add", self)
+        # self.add_action.setStatusTip("Add a new task")
+        # self.add_action.triggered.connect(lambda: self.change_page(self.add_page, "Add a Task"))
 
-        self.del_action = QAction(QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Remove", self)
-        self.del_action.setStatusTip("Remove a task")
-        self.del_action.triggered.connect(lambda: self.change_page(self.del_page, "Remove a Task"))
+        # self.del_action = QAction(QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Remove", self)
+        # self.del_action.setStatusTip("Remove a task")
+        # self.del_action.triggered.connect(lambda: self.change_page(self.del_page, "Remove a Task"))
 
-        self.mark_all_as_done_action = QAction(
-            QIcon(os.path.join(ICON_PATH, f"mark_all_as_done_icon_{THEME}.png")), "Mark all as Done", self
-        )
-        self.mark_all_as_done_action.setStatusTip("Mark all items off as Done")
-        self.mark_all_as_done_action.triggered.connect(lambda: self.change_page(self.mark_off_page, "Mark all as Done"))
+        # self.mark_all_as_done_action = QAction(
+        #     QIcon(os.path.join(ICON_PATH, f"mark_all_as_done_icon_{THEME}.png")), "Mark all as Done", self
+        # )
+        # self.mark_all_as_done_action.setStatusTip("Mark all items off as Done")
+        # self.mark_all_as_done_action.triggered.connect(lambda: self.change_page(self.mark_off_page, "Mark all as Done"))
 
-        self.del_done_action = QAction(
-            QIcon(os.path.join(ICON_PATH, f"del_done_icon_{THEME}.png")), "Remove Done", self
-        )
-        self.del_done_action.setStatusTip("Remove all tasks marked as done")
-        self.del_done_action.triggered.connect(lambda: self.change_page(self.del_done_page, "Remove Done Tasks"))
+        # self.del_done_action = QAction(
+        #     QIcon(os.path.join(ICON_PATH, f"del_done_icon_{THEME}.png")), "Remove Done", self
+        # )
+        # self.del_done_action.setStatusTip("Remove all tasks marked as done")
+        # self.del_done_action.triggered.connect(lambda: self.change_page(self.del_done_page, "Remove Done Tasks"))
 
-        self.del_all_action = QAction(
-            QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")), "Remove ALL Items", self
-        )
-        self.del_all_action.setStatusTip("Remove ALL ITEMS PERMANENTLY")
-        self.del_all_action.triggered.connect(lambda: self.change_page(self.del_all_page, "Remove ALL Tasks"))
+        # self.del_all_action = QAction(
+        #     QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")), "Remove ALL Items", self
+        # )
+        # self.del_all_action.setStatusTip("Remove ALL ITEMS PERMANENTLY")
+        # self.del_all_action.triggered.connect(lambda: self.change_page(self.del_all_page, "Remove ALL Tasks"))
 
-        self.toolbar.addAction(self.add_action)
-        self.toolbar.addAction(self.del_action)
-        self.toolbar.addAction(self.mark_all_as_done_action)
-        self.toolbar.addAction(self.del_done_action)
-        self.toolbar.addAction(self.del_all_action)
+        # self.toolbar.addAction(self.add_action)
+        # self.toolbar.addAction(self.del_action)
+        # self.toolbar.addAction(self.mark_all_as_done_action)
+        # self.toolbar.addAction(self.del_done_action)
+        # self.toolbar.addAction(self.del_all_action)
 
         # Main layouts
         self.window_layout = QVBoxLayout()
@@ -655,7 +656,7 @@ class MainWindow(QMainWindow):
         self.tabbar.setShape(QTabBar.Shape.RoundedWest)
         self.tabbar.currentChanged.connect(self.change_page)
         self.tabbar.setFont(QFont(self.families[4][0], 12))
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, "logo-mono.png")), "Tasks")
+        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"logo_mono_{THEME}.png")), "Tasks")
         self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add")
         self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Del")
         self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")), "Del All")
@@ -695,29 +696,37 @@ class MainWindow(QMainWindow):
         self.header_menu_button.setFlat(True)
         self.header_menu_button.setMenu(self.header_menu)
 
-        self.header_page_label = QLabel("Tasks")
-        self.header_page_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.header_page_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
-        self.header_page_label.setFont(QFont(self.families[4][0]))
+        # self.header_page_label = QLabel("Tasks")
+        # self.header_page_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        # self.header_page_label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        # self.header_page_label.setFont(QFont(self.families[4][0]))
 
         self.header_menu_layout.addWidget(self.header_menu_button)
-        self.header_menu_layout.addWidget(self.header_page_label)
+        # self.header_menu_layout.addWidget(self.header_page_label)
+
+        self.header_icon = QLabel()
+        pixmap = QPixmap(os.path.join(ASSET_PATH, "icons", "logo.png"))
+        pixmap = pixmap.scaledToWidth(20, Qt.TransformationMode.SmoothTransformation)
+        self.header_icon.setPixmap(pixmap)
+        self.header_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.header_icon.resize(pixmap.size())
 
         self.header_label = QLabel("QueTueDue")
-        self.header_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.header_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.header_label.setContentsMargins(0, 4, 0, 4)
         self.header_label.setFont(QFont(self.families[4], 12))
 
         self.header_sub_label = QLabel(f"{__version__}")
-        self.header_sub_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.header_sub_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         self.header_sub_label_palette = self.header_sub_label.palette()
         self.header_sub_label_palette.setColor(QPalette.ColorRole.WindowText, QColor(50, 50, 50))
         self.header_sub_label.setPalette(self.header_sub_label_palette)
         self.header_sub_label.setFont(QFont(self.families[4], 10))
 
-        self.header_title_layout.addWidget(self.header_sub_label)
+        self.header_title_layout.addWidget(self.header_icon)
         self.header_title_layout.addWidget(self.header_label)
-        self.header_title_layout.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.header_title_layout.addWidget(self.header_sub_label)
+        self.header_title_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         self.header_layout.addLayout(self.header_menu_layout)
         self.header_layout.addLayout(self.header_title_layout)
@@ -838,7 +847,7 @@ class MainWindow(QMainWindow):
                 task_text = line[1:].strip()
                 checkbox = QCheckBox(task_text)
 
-                max_width = max(50, int((self.width() / 3) - self.tabbar.width()))
+                max_width = max(50, int((self.width() / 3) - self.tabbar.width()) - 2)
                 checkbox.setMaximumWidth(max_width)
                 checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -924,9 +933,6 @@ class MainWindow(QMainWindow):
                 f.write(f"\nt{text}")
 
         elif state == 1:
-            max_width = max(50, int((self.width() / 3) - self.toolbar.width()))
-            cb.setMaximumWidth(max_width)
-            cb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.in_prog_layout.addWidget(cb)
 
             with open(TODO_PATH, "r") as f:
@@ -941,9 +947,6 @@ class MainWindow(QMainWindow):
                 f.write(f"\ni{text}")
 
         elif state == 2:
-            max_width = max(50, int((self.width() / 3) - self.toolbar.width()))
-            cb.setMaximumWidth(max_width)
-            cb.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             self.done_layout.addWidget(cb)
 
             with open(TODO_PATH, "r") as f:
