@@ -1,0 +1,11 @@
+QToolButton:hover, QPushButton:hover {
+  background-color: #B3CCBF;
+  border-radius: 4px;
+  padding: 0px;
+}
+
+QToolButton:pressed, QPushButton:pressed, QPushButton:selected {
+    background-color: #8AD6B7;
+    border-radius: 8px;
+    padding: 0px;
+}
