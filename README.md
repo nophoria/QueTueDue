@@ -30,6 +30,7 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
  - [ ] QML Stylesheets implementation
  - [ ] Installer
  - [ ] Due dates
+ - [ ] to-do.txt Plain Text -> JSON
 
 # Installation
 1. Download files as zip
