@@ -29,6 +29,7 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
  - [ ] Statisticts(?)
  - [ ] QML Stylesheets implementation
  - [ ] Installer
+ - [ ] Due dates
 
 # Installation
 1. Download files as zip
