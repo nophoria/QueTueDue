@@ -23,12 +23,12 @@ QueTueDue's primary feature is the quick-access list inside your system tray, co
 # Roadmap
 
 ## To-Add:
- - Mark all as done toolbar action
- - Colour-coded categories
- - Keyboard Shortcuts
- - Statisticts(?)
- - QML Stylesheets implementation
- - Installer
+ - [x] Mark all as done toolbar action
+ - [ ] Colour-coded categories
+ - [ ] Keyboard Shortcuts
+ - [ ] Statisticts(?)
+ - [ ] QML Stylesheets implementation
+ - [ ] Installer
 
 # Installation
 1. Download files as zip
