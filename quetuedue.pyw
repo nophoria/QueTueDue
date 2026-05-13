@@ -415,11 +415,13 @@ class DelDoneWindow(QWidget):
         with open(TODO_PATH, "r") as f:
             lines = f.readlines()
 
-        lines = [line for line in lines if not line.startswith("d")]
-        lines = [line for line in lines if line.strip()]
+        newlines = []
+        for line in lines:
+            if not line.startswith('d'):
+                newlines.append(line[1:].strip())
 
         with open(TODO_PATH, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+            f.writelines(newlines)
 
         self.app_window.load_checkboxes()
         self.app_window.change_page(0)
