@@ -691,7 +691,7 @@ class MainWindow(QMainWindow):
         self.header_menu.addMenu(self.header_menu_remove_menu)
 
         self.header_menu_mark_off = QAction("Mark Off All")
-        self.header_menu_mark_off.triggered.connect(lambda: self.mark_all_donw_window())
+        self.header_menu_mark_off.triggered.connect(lambda: self.mark_all_done_window())
         self.header_menu_mark_off.setFont(QFont(self.families[4][0]))
         self.header_menu.addAction(self.header_menu_mark_off)
 
