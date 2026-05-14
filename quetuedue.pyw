@@ -36,7 +36,7 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QStackedLayout,
     QSystemTrayIcon,
-    QTabBar,
+    QToolBar,
     QToolButton,
     QVBoxLayout,
     QWidget,
@@ -149,7 +149,7 @@ class AddWindow(QWidget):
                 f.write(f"\nt{line}")
 
             self.app_window.load_checkboxes()
-            self.app_window.change_page(0)
+            self.close()
 
     def check_for_duplicates(self):
         """Constantly recieves what's in the self.input line edit and
@@ -177,7 +177,7 @@ class AddWindow(QWidget):
             return False
 
     def exit(self):
-        self.app_window.change_page(0)
+        self.close()
 
 
 class DelWindow(QWidget):
@@ -248,10 +248,10 @@ class DelWindow(QWidget):
             f.writelines(lines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(0)
+        self.close()
 
     def exit(self):
-        self.app_window.change_page(0)
+        self.close()
 
 
 class MarkAllAsDoneWindow(QWidget):
@@ -306,7 +306,7 @@ class MarkAllAsDoneWindow(QWidget):
             f.writelines(lines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(0)
+        self.close()
 
     def gen_sub_label(self):
         """Changes the text on a label to mention first affected task
@@ -337,7 +337,7 @@ class MarkAllAsDoneWindow(QWidget):
 
     def exit(self):
         """Sets the app page to MainWindow's main_page"""
-        self.app_window.change_page(0)
+        self.close()
 
 
 class DelDoneWindow(QWidget):
@@ -424,10 +424,10 @@ class DelDoneWindow(QWidget):
             f.writelines(newlines)
 
         self.app_window.load_checkboxes()
-        self.app_window.change_page(0)
+        self.close()
 
     def exit(self):
-        self.app_window.change_page(0)
+        self.close()
 
 
 class DelAllWindow(QWidget):
@@ -499,7 +499,7 @@ class DelAllWindow(QWidget):
 
     def exit(self):
         """Sets the app page to MainWindow's main_page"""
-        self.app_window.change_page(0)
+        self.close()
 
     def DelAllSureWindow(self):
         """Shows the confirm window pop-up."""
@@ -545,11 +545,10 @@ class DelAllSureWindow(QWidget):
             pass
 
         self.app_window.app_window.load_checkboxes()
-        self.app_window.app_window.change_page(0)
+        self.app_window.close()
         self.close()
 
     def exit(self):
-        self.app_window.app_window.change_page(0)
         self.close()
 
 
@@ -621,20 +620,45 @@ class MainWindow(QMainWindow):
         self.done_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.tabbar_layout = QHBoxLayout()
 
-        # Tabbar
-        self.tabbar = QTabBar()
-        self.tabbar.setShape(QTabBar.Shape.RoundedWest)
-        self.tabbar.currentChanged.connect(self.change_page)
-        self.tabbar.setFont(QFont(self.families[4][0], 12))
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"logo_mono_{THEME}.png")), "Tasks")
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add")
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Del")
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")), "Del All")
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"del_done_icon_{THEME}.png")), "Del Done")
-        self.tabbar.addTab(QIcon(os.path.join(ICON_PATH, f"mark_all_as_done_icon_{THEME}.png")), "Mark All Done")
-        self.tabbar_layout.addWidget(self.tabbar)
-        self.tabbar_layout.addLayout(self.stack_layout)
-        self.tabbar.setStyleSheet(f"min-height: {self.height}")
+        # Toolbar
+        self.toolbar = QToolBar("Utilities")
+        self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, self.toolbar)
+
+        self.add_action = QAction(QIcon(os.path.join(ICON_PATH,
+                                 f"add_task_icon_{THEME}.png")),
+                                 "Add", self)
+        self.add_action.setStatusTip("Add a new task")
+        self.add_action.triggered.connect(self.add_task_window)
+
+        self.mark_all_done_action = QAction(QIcon(os.path.join(ICON_PATH,
+                                 f"mark_all_as_done_icon_{THEME}.png")),
+                                 "Mark All Done", self)
+        self.mark_all_done_action.triggered.connect(self.mark_all_done_window)
+        self.mark_all_done_action.setStatusTip("Mark all current tasks \"Done\"")
+
+        self.del_action = QAction(QIcon(os.path.join(ICON_PATH,
+                                 f"del_task_icon_{THEME}.png")),
+                                 "Remove", self)
+        self.del_action.setStatusTip("Remove a task")
+        self.del_action.triggered.connect(self.del_task_window)
+
+        self.del_done_action = QAction(QIcon(os.path.join(ICON_PATH,
+                                     f"del_done_icon_{THEME}.png")),
+                                     "Remove Done", self)
+        self.del_done_action.setStatusTip("Remove all tasks marked as done")
+        self.del_done_action.triggered.connect(self.del_done_window)
+
+        self.del_all_action = QAction(QIcon(os.path.join(ICON_PATH,
+                                    f"del_all_icon_{THEME}.png")),
+                                    "Remove ALL Items", self)
+        self.del_all_action.setStatusTip("Remove ALL ITEMS PERMANENTLY")
+        self.del_all_action.triggered.connect(self.del_all_window)
+
+        self.toolbar.addAction(self.add_action)
+        self.toolbar.addAction(self.del_action)
+        self.toolbar.addAction(self.mark_all_done_action)
+        self.toolbar.addAction(self.del_done_action)
+        self.toolbar.addAction(self.del_all_action)
 
         # Widgets
         self.header_layout = QHBoxLayout()
@@ -649,17 +673,17 @@ class MainWindow(QMainWindow):
         self.header_menu.addAction(self.header_menu_file)
 
         self.header_menu_add = QAction("Add")
-        self.header_menu_add.triggered.connect(lambda: self.change_page(1))
+        self.header_menu_add.triggered.connect(lambda: self.add_task_window())
         self.header_menu_add.setFont(QFont(self.families[4][0]))
         self.header_menu.addAction(self.header_menu_add)
 
         self.header_menu_remove_menu = QMenu("Remove")
         self.header_menu_remove = QAction("Remove")
-        self.header_menu_remove.triggered.connect(lambda: self.change_page(2))
+        self.header_menu_remove.triggered.connect(lambda: self.del_task_window())
         self.header_menu_remove.setFont(QFont(self.families[4][0]))
 
         self.header_menu_remove_all = QAction("Remove ALL")
-        self.header_menu_remove_all.triggered.connect(lambda: self.change_page(3))
+        self.header_menu_remove_all.triggered.connect(lambda: self.del_all_window())
         self.header_menu_remove_all.setFont(QFont(self.families[4][0]))
 
         self.header_menu_remove_menu.addAction(self.header_menu_remove)
@@ -667,7 +691,7 @@ class MainWindow(QMainWindow):
         self.header_menu.addMenu(self.header_menu_remove_menu)
 
         self.header_menu_mark_off = QAction("Mark Off All")
-        self.header_menu_mark_off.triggered.connect(lambda: self.change_page(5))
+        self.header_menu_mark_off.triggered.connect(lambda: self.mark_all_donw_window())
         self.header_menu_mark_off.setFont(QFont(self.families[4][0]))
         self.header_menu.addAction(self.header_menu_mark_off)
 
@@ -802,7 +826,6 @@ class MainWindow(QMainWindow):
         self.mark_off_page = MarkAllAsDoneWindow(self)
         self.stack_layout.addWidget(self.mark_off_page)
 
-        self.change_page(0)
         self.window_layout.addLayout(self.stack_layout)
 
         self.window_wrapper = QWidget()
@@ -812,6 +835,37 @@ class MainWindow(QMainWindow):
         self.setMinimumWidth(800)
         QApplication.processEvents()
         self.load_checkboxes()
+
+    def add_task_window(self, checked=False):
+        """Open the Add task toolbar task window pop-up."""
+        self.w = AddWindow(self)
+        self.w.show()
+
+    def mark_all_done_window(self, checked=False):
+        """Open the Add task toolbar task window pop-up."""
+        self.w = MarkAllAsDoneWindow(self)
+        self.w.show()
+
+    def del_task_window(self, checked=False):
+        """Open the Remove task toolbar task window pop-up."""
+        self.w = DelWindow(self)
+        self.w.show()
+    
+    def del_done_window(self, checked=False):
+        """Open the Remove all done toolbar task window pop-up."""
+        self.w = DelDoneWindow(self)
+        self.w.show()
+    
+    def del_all_window(self, checked=False):
+        """Open the Remove ALL Items toolbar task window pop-up."""
+        self.w = DelAllWindow(self)
+        self.w.show()
+    
+    def open_app(self):
+        """Open the main app when the Open full app system tray context
+        menu option is triggered.
+        """
+        self.show()
 
     def clear_layout(self, layout, start):
         """Removes all widgets in a given layout."""
@@ -849,7 +903,7 @@ class MainWindow(QMainWindow):
                 task_text = line[1:].strip()
                 checkbox = QCheckBox(task_text)
 
-                max_width = max(50, int((self.width() / 3) - self.tabbar.width()) - 2)
+                max_width = max(50, int(self.width() / 3) - 2)
                 checkbox.setMaximumWidth(max_width)
                 checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
@@ -968,15 +1022,7 @@ class MainWindow(QMainWindow):
         print(self.height())
         print(self.header_label.height())
         print(self.height() - self.header_label.height())
-        self.tabbar.setStyleSheet(f"min-height: {self.height() - 74}")
-        self.tabbar.setStyleSheet(f"max-height: {self.height() - 74}")
-        print(self.tabbar.height())
         super().resizeEvent(event)
-
-    def change_page(self, index):
-        print(index)
-        self.stack_layout.setCurrentIndex(index)
-        self.tabbar.setCurrentIndex(index)
 
 
 app = QApplication(sys.argv)
