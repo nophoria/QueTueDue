@@ -59,3 +59,5 @@ QueTueDue depends on the following modules\libraries:
 # 
 Thanks for checking out this begginner project of mine!
 I've _tried_ to abide by PEP 8 as much as possible... but if I've missed a spot feel free to report a bug!
+#
+<img width="131" height="42" alt="Scripted-By-a-Human-Not-By-AI-Badge-white" src="https://github.com/user-attachments/assets/ec05b5e1-0fc6-4f61-9df6-872b64166f2b" />
