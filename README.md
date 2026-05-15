@@ -1,4 +1,3 @@
-<img width="131" height="42" alt="Scripted-By-a-Human-Not-By-AI-Badge-white" src="https://github.com/user-attachments/assets/ec05b5e1-0fc6-4f61-9df6-872b64166f2b" />
 ![Full-Logo](assets/icons/logo-full.png)
 # QueTueDue
 
@@ -86,3 +85,6 @@ I've _tried_ to abide by PEP 8 as much as possible... but if I've missed a spot 
 <path d="M120.348 9.43359C121.094 9.43369 121.599 9.69402 121.861 10.2148C122.006 10.4999 122.077 10.9086 122.077 11.4395V14.8154H121.178V11.498C121.178 11.177 121.13 10.9183 121.035 10.7217C120.878 10.394 120.593 10.2295 120.18 10.2295C119.97 10.2295 119.798 10.2514 119.664 10.2939C119.422 10.366 119.209 10.5103 119.025 10.7266C118.878 10.9001 118.781 11.08 118.735 11.2666C118.693 11.4501 118.671 11.7145 118.671 12.0586V14.8154H117.786V9.55176H118.627V10.2988C118.876 9.99086 119.139 9.76912 119.418 9.63477C119.696 9.50042 120.007 9.43359 120.348 9.43359Z" fill="black"/>
 <path d="M51.5244 8.59766H50.625V7.5957H51.5244V8.59766Z" fill="black"/>
 </svg>
+<br>
+#
+<img width="131" height="42" alt="Scripted-By-a-Human-Not-By-AI-Badge-white" src="https://github.com/user-attachments/assets/ec05b5e1-0fc6-4f61-9df6-872b64166f2b" />
