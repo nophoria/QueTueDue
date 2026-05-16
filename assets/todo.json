@@ -1,0 +1,24 @@
+{
+  "todo": [
+    {
+      "name": "Add a new task by pressing the circled tick with a cross on the toolbar",
+      "desc": "notImplented",
+      "due": "YYYY-MM-DDTHH:MM:SS",
+      "category": "white"
+    },
+    {
+      "name": "You could remove this task with the circled tick with a cross on the toolbar",
+      "desc": "notImplented",
+      "due": "YYYY-MM-DDTHH:MM:SS",
+      "category": "white"
+    },
+    {
+      "name": "Or you could just use the clear all button on the toolbar represented by a bin",
+      "desc": "notImplented",
+      "due": "YYYY-MM-DDTHH:MM:SS",
+      "category": "white"
+    }
+  ],
+  "inprog": [],
+  "done": []
+}
