@@ -3,10 +3,10 @@
 __version__ = "v0.6-b3"
 
 # Import dependecies
+import json
 import os
 import re
 import sys
-import json
 
 from PyQt6.QtCore import (
     QProcess,
@@ -26,6 +26,7 @@ from PyQt6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -37,12 +38,11 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QStackedLayout,
     QSystemTrayIcon,
+    QTextBrowser,
     QToolBar,
     QToolButton,
     QVBoxLayout,
     QWidget,
-    QDialog,
-    QTextBrowser
 )
 
 # Define Constants
@@ -51,7 +51,9 @@ FONT_PATH = os.path.join(os.path.dirname(__file__), "assets", "fonts")
 TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "todo.json")
 ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 USER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "config.config")
-DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "default.config")
+DEFAULT_CONFIG_PATH = os.path.join(
+    os.path.dirname(__file__), "config", "default.config"
+)
 ROOT_PATH = os.path.dirname(__file__)
 
 if "-n" not in sys.argv and "--no-file-checking" not in sys.argv:
@@ -114,7 +116,9 @@ class AddWindow(QDialog):
 
         # Widgets
         self.label = QLabel("Add a new task")
-        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.families[4][0], 32))
@@ -148,7 +152,7 @@ class AddWindow(QDialog):
         """
         self.app_window.validate_todo_json()
         if not self.check_for_duplicates():
-            with open(TODO_PATH, 'r', encoding='utf-8') as f:
+            with open(TODO_PATH, "r", encoding="utf-8") as f:
                 try:
                     todo_json = json.load(f)
                 except Exception as e:
@@ -159,12 +163,11 @@ class AddWindow(QDialog):
                 "name": line,
                 "desc": "notImplented",
                 "due": "YYYY-MM-DDTHH:MM:SS",
-                "category": "white"
+                "category": "white",
             }
-            todo_json['todo'].append(item)
+            todo_json["todo"].append(item)
             with open(TODO_PATH, "w", encoding="utf-8") as f:
                 f.write(json.dumps(todo_json, indent=2))
-                                
 
             self.app_window.load_checkboxes()
             self.close()
@@ -176,7 +179,7 @@ class AddWindow(QDialog):
         "Add" (self.yes_button) button and set the text to "Task already
         exists".
         """
-        with open(TODO_PATH, 'r', encoding='utf-8') as f:
+        with open(TODO_PATH, "r", encoding="utf-8") as f:
             try:
                 todo_json = json.load(f)
             except Exception as e:
@@ -188,7 +191,7 @@ class AddWindow(QDialog):
         dupe = False
         for progress in todo_json:
             for item in todo_json[progress]:
-                if line == item['name']:
+                if line == item["name"]:
                     dupe = True
 
         if dupe:
@@ -221,7 +224,9 @@ class DelWindow(QDialog):
         self.label_layout = QHBoxLayout()
         self.label_layout.setSpacing(16)
         self.label = QLabel("Remove a task")
-        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.families[4][0], 32))
@@ -295,7 +300,9 @@ class MarkAllAsDoneWindow(QDialog):
         self.label_layout = QHBoxLayout()
         self.label_layout.setSpacing(16)
         self.label = QLabel("Mark off all tasks")
-        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.families[4][0], 32))
@@ -381,7 +388,9 @@ class DelDoneWindow(QDialog):
         self.label_layout = QHBoxLayout()
         self.label_layout.setSpacing(16)
         self.label = QLabel("Remove all done tasks")
-        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.families[4][0], 32))
@@ -445,7 +454,7 @@ class DelDoneWindow(QDialog):
 
         newlines = []
         for line in lines:
-            if not line.startswith('d'):
+            if not line.startswith("d"):
                 newlines.append(line[1:].strip())
 
         with open(TODO_PATH, "w", encoding="utf-8") as f:
@@ -471,7 +480,9 @@ class DelAllWindow(QDialog):
         self.label_layout = QHBoxLayout()
         self.label_layout.setSpacing(16)
         self.label = QLabel("Remove ALL tasks")
-        self.label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        self.label.setSizePolicy(
+            QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.families[4][0], 32))
@@ -545,7 +556,9 @@ class DelAllSureWindow(QDialog):
         self.app_window = DelAllWindow_instance
         self.setWindowTitle("Are you sure?")
 
-        self.label = QLabel("Are you VERY sure you want to PERMANENTLY DELETE ALL ITEMS?!")
+        self.label = QLabel(
+            "Are you VERY sure you want to PERMANENTLY DELETE ALL ITEMS?!"
+        )
         self.label.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.label.setWordWrap(True)
         self.label.setFont(QFont(self.app_window.app_window.families[4][0], 32))
@@ -580,9 +593,9 @@ class DelAllSureWindow(QDialog):
     def exit(self):
         self.close()
 
+
 class ParseTodoErrorWindow(QDialog):
-    """Dialog that appears if parsing the todo list as JSON fails.
-    """
+    """Dialog that appears if parsing the todo list as JSON fails."""
 
     def __init__(self, MainWindow_instance):
         super().__init__()
@@ -592,46 +605,50 @@ class ParseTodoErrorWindow(QDialog):
 
         self.layout = QVBoxLayout()
         self.button_layout = QHBoxLayout()
-        
+
         self.label = QLabel("Corrupt or erroneous todo list!")
-        self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.label.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
         self.label.setFont(QFont(self.main.families[4][0], 32))
-        
+
         self.sub_label = QLabel(
             "There was an error while trying to parse your todo list! If you have modified it externally, check the formatting."
         )
         self.sub_label.setFont(QFont(self.main.families[4][0], 12))
-        self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
-        
+        self.sub_label.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
+
         self.error_label = QTextBrowser()
         self.error_label.setText(str(self.main.todo_error))
         self.error_label.setFont(QFont(self.main.families[4][0], 8))
         self.error_label.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.yes_button = QPushButton("Create blank list")
-        
+
         self.no_button = QPushButton("Exit")
-        
+
         self.button_layout.addWidget(self.yes_button)
         self.button_layout.addWidget(self.no_button)
-        
+
         self.layout.addWidget(self.label)
         self.layout.addWidget(self.sub_label)
         self.layout.addWidget(self.error_label)
         self.layout.addLayout(self.button_layout)
-        
+
         self.no_button.clicked.connect(self.close_app)
         self.yes_button.clicked.connect(self.clear_todo)
-        
+
         self.setLayout(self.layout)
 
     def close_app(self):
         sys.exit()
-    
+
     def clear_todo(self):
-        with open(TODO_PATH, 'w') as f:
+        with open(TODO_PATH, "w") as f:
             f.write(json.dumps('{"todo": [], "inprog": [], "done": []}', indent=2))
-        
+
         self.close()
 
 
@@ -661,7 +678,9 @@ class MainWindow(QMainWindow):
         for self.font in self.fonts:
             self.fontfile = os.path.join(FONT_PATH, self.font)
             if not os.path.exists(self.fontfile):
-                process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
+                process.startDetached(
+                    "python", [os.path.join(ROOT_PATH, "file_checker.py")]
+                )
                 sys.exit()
             else:
                 id = QFontDatabase.addApplicationFont(self.fontfile)
@@ -682,11 +701,15 @@ class MainWindow(QMainWindow):
 
         self.open_app_tray_action = QAction("𝗢𝗽𝗲𝗻 𝗳𝘂𝗹𝗹 𝗮𝗽𝗽")
         self.open_app_tray_action.triggered.connect(self.open_app)
-        self.open_app_tray_action.setIcon(QIcon(os.path.join(ICON_PATH, f"open_app_icon_{THEME}.png")))
+        self.open_app_tray_action.setIcon(
+            QIcon(os.path.join(ICON_PATH, f"open_app_icon_{THEME}.png"))
+        )
 
         self.quit_app_tray_action = QAction("𝗤𝘂𝗶𝘁 𝗤𝘂𝗲𝗧𝘂𝗲𝗗𝘂𝗲")
         self.quit_app_tray_action.triggered.connect(self.quit_app)
-        self.quit_app_tray_action.setIcon(QIcon(os.path.join(ICON_PATH, f"quit_app_icon_{THEME}.png")))
+        self.quit_app_tray_action.setIcon(
+            QIcon(os.path.join(ICON_PATH, f"quit_app_icon_{THEME}.png"))
+        )
 
         self.tray.setContextMenu(self.tray_menu)
 
@@ -706,33 +729,39 @@ class MainWindow(QMainWindow):
         self.toolbar = QToolBar("Utilities")
         self.addToolBar(Qt.ToolBarArea.BottomToolBarArea, self.toolbar)
 
-        self.add_action = QAction(QIcon(os.path.join(ICON_PATH,
-                                 f"add_task_icon_{THEME}.png")),
-                                 "Add", self)
+        self.add_action = QAction(
+            QIcon(os.path.join(ICON_PATH, f"add_task_icon_{THEME}.png")), "Add", self
+        )
         self.add_action.setStatusTip("Add a new task")
         self.add_action.triggered.connect(self.add_task_window)
 
-        self.mark_all_done_action = QAction(QIcon(os.path.join(ICON_PATH,
-                                 f"mark_all_as_done_icon_{THEME}.png")),
-                                 "Mark All Done", self)
+        self.mark_all_done_action = QAction(
+            QIcon(os.path.join(ICON_PATH, f"mark_all_as_done_icon_{THEME}.png")),
+            "Mark All Done",
+            self,
+        )
         self.mark_all_done_action.triggered.connect(self.mark_all_done_window)
-        self.mark_all_done_action.setStatusTip("Mark all current tasks \"Done\"")
+        self.mark_all_done_action.setStatusTip('Mark all current tasks "Done"')
 
-        self.del_action = QAction(QIcon(os.path.join(ICON_PATH,
-                                 f"del_task_icon_{THEME}.png")),
-                                 "Remove", self)
+        self.del_action = QAction(
+            QIcon(os.path.join(ICON_PATH, f"del_task_icon_{THEME}.png")), "Remove", self
+        )
         self.del_action.setStatusTip("Remove a task")
         self.del_action.triggered.connect(self.del_task_window)
 
-        self.del_done_action = QAction(QIcon(os.path.join(ICON_PATH,
-                                     f"del_done_icon_{THEME}.png")),
-                                     "Remove Done", self)
+        self.del_done_action = QAction(
+            QIcon(os.path.join(ICON_PATH, f"del_done_icon_{THEME}.png")),
+            "Remove Done",
+            self,
+        )
         self.del_done_action.setStatusTip("Remove all tasks marked as done")
         self.del_done_action.triggered.connect(self.del_done_window)
 
-        self.del_all_action = QAction(QIcon(os.path.join(ICON_PATH,
-                                    f"del_all_icon_{THEME}.png")),
-                                    "Remove ALL Items", self)
+        self.del_all_action = QAction(
+            QIcon(os.path.join(ICON_PATH, f"del_all_icon_{THEME}.png")),
+            "Remove ALL Items",
+            self,
+        )
         self.del_all_action.setStatusTip("Remove ALL ITEMS PERMANENTLY")
         self.del_all_action.triggered.connect(self.del_all_window)
 
@@ -796,8 +825,12 @@ class MainWindow(QMainWindow):
         self.header_menu.addAction(self.header_menu_about)
 
         self.header_menu_button = QToolButton()
-        self.header_menu_button.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
-        self.header_menu_button.setIcon(QIcon(os.path.join(ICON_PATH, f"header_menu_icon_{THEME}.png")))
+        self.header_menu_button.setPopupMode(
+            QToolButton.ToolButtonPopupMode.InstantPopup
+        )
+        self.header_menu_button.setIcon(
+            QIcon(os.path.join(ICON_PATH, f"header_menu_icon_{THEME}.png"))
+        )
         self.header_menu_button.setIconSize(QSize(24, 24))
         self.header_menu_button.setFixedSize(32, 32)
         # self.header_menu_button.setFlat(True)
@@ -824,16 +857,22 @@ class MainWindow(QMainWindow):
         self.header_label.setFont(QFont(self.families[4], 12))
 
         self.header_sub_label = QLabel(f"{__version__}")
-        self.header_sub_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.header_sub_label.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
         self.header_sub_label_palette = self.header_sub_label.palette()
-        self.header_sub_label_palette.setColor(QPalette.ColorRole.WindowText, QColor(50, 50, 50))
+        self.header_sub_label_palette.setColor(
+            QPalette.ColorRole.WindowText, QColor(50, 50, 50)
+        )
         self.header_sub_label.setPalette(self.header_sub_label_palette)
         self.header_sub_label.setFont(QFont(self.families[4], 10))
 
         self.header_title_layout.addWidget(self.header_icon)
         self.header_title_layout.addWidget(self.header_label)
         self.header_title_layout.addWidget(self.header_sub_label)
-        self.header_title_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.header_title_layout.setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
 
         self.header_layout.addLayout(self.header_menu_layout)
         self.header_layout.addLayout(self.header_title_layout)
@@ -855,7 +894,9 @@ class MainWindow(QMainWindow):
 
         self.main_layout.addLayout(self.tasks_layout)
 
-        self.header_spacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+        self.header_spacer = QSpacerItem(
+            20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
+        )
         self.main_layout.addItem(self.header_spacer)
 
         self.todo_header = QLabel("To-Do")
@@ -864,7 +905,9 @@ class MainWindow(QMainWindow):
         except IndexError:
             self.todo_header.setFont(QFont("", 32))
         self.todo_layout.addWidget(self.todo_header)
-        self.todo_header.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.todo_header.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         self.in_prog_header = QLabel("In Prog.")
         try:
@@ -872,7 +915,9 @@ class MainWindow(QMainWindow):
         except IndexError:
             self.in_prog_header.setFont(QFont("", 32))
         self.in_prog_layout.addWidget(self.in_prog_header)
-        self.in_prog_header.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.in_prog_header.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         self.done_header = QLabel("Done :)")
         try:
@@ -880,7 +925,9 @@ class MainWindow(QMainWindow):
         except IndexError:
             self.done_header.setFont(QFont("", 32))
         self.done_layout.addWidget(self.done_header)
-        self.done_header.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.done_header.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+        )
 
         self.load_checkboxes()
         container = QWidget()
@@ -906,17 +953,17 @@ class MainWindow(QMainWindow):
         """Open the Remove task toolbar task window pop-up."""
         self.w = DelWindow(self)
         self.w.show()
-    
+
     def del_done_window(self, checked=False):
         """Open the Remove all done toolbar task window pop-up."""
         self.w = DelDoneWindow(self)
         self.w.show()
-    
+
     def del_all_window(self, checked=False):
         """Open the Remove ALL Items toolbar task window pop-up."""
         self.w = DelAllWindow(self)
         self.w.show()
-    
+
     def open_app(self):
         """Open the main app when the Open full app system tray context
         menu option is triggered.
@@ -949,16 +996,18 @@ class MainWindow(QMainWindow):
         self.tray_menu.addSeparator()
 
         todo_json = self.validate_todo_json()
-        
-        for item in todo_json['todo']:
-            task_text = item['name']
-            task_desc = item['desc']            
+
+        for item in todo_json["todo"]:
+            task_text = item["name"]
+            task_desc = item["desc"]
 
             checkbox = QCheckBox(task_text)
 
             max_width = max(50, int(self.width() / 3) - 2)
             checkbox.setMaximumWidth(max_width)
-            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            checkbox.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
 
             try:
                 checkbox.setFont(QFont(self.families[4]))
@@ -977,17 +1026,21 @@ class MainWindow(QMainWindow):
 
             checkbox.setProperty("task", task_text)
             checkbox.setTristate(True)
-            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
+            checkbox.stateChanged.connect(
+                lambda state, cb=checkbox: self.moveCheckbox(cb, state)
+            )
 
-        for item in todo_json['inprog']:
-            task_text = item['name']
-            task_desc = item['desc']
+        for item in todo_json["inprog"]:
+            task_text = item["name"]
+            task_desc = item["desc"]
 
             checkbox = QCheckBox(task_text)
 
             max_width = max(50, int(self.width() / 3) - 2)
             checkbox.setMaximumWidth(max_width)
-            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            checkbox.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
 
             try:
                 checkbox.setFont(QFont(self.families[4]))
@@ -996,24 +1049,28 @@ class MainWindow(QMainWindow):
 
             # Add checkboxes and tray tasks depending on category
             checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
-            checkbox.toolTip = task_desc            
+            checkbox.toolTip = task_desc
             self.in_prog_layout.addWidget(checkbox)
 
             self.blockSignals(False)
 
             checkbox.setProperty("task", task_text)
             checkbox.setTristate(True)
-            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
+            checkbox.stateChanged.connect(
+                lambda state, cb=checkbox: self.moveCheckbox(cb, state)
+            )
 
-        for item in todo_json['done']:
-            task_text = item['name']
-            task_desc = item['desc']
+        for item in todo_json["done"]:
+            task_text = item["name"]
+            task_desc = item["desc"]
 
             checkbox = QCheckBox(task_text)
 
             max_width = max(50, int(self.width() / 3) - 2)
             checkbox.setMaximumWidth(max_width)
-            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            checkbox.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
 
             try:
                 checkbox.setFont(QFont(self.families[4]))
@@ -1029,8 +1086,10 @@ class MainWindow(QMainWindow):
 
             checkbox.setProperty("task", task_text)
             checkbox.setTristate(True)
-            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
-    
+            checkbox.stateChanged.connect(
+                lambda state, cb=checkbox: self.moveCheckbox(cb, state)
+            )
+
         # Add final static tray tasks and refresh the tray context menu
         self.tray_menu.addSeparator()
         self.tray_menu.addAction(self.open_app_tray_action)
@@ -1054,12 +1113,6 @@ class MainWindow(QMainWindow):
         self.w = WindowInstance(self)
         self.w.show()
 
-    def open_app(self):
-        """Open the main app when the Open full app system tray context
-        menu option is triggered.
-        """
-        self.show()
-
     def quit_app(self):
         """Quit the whole process when the Quit QueTueDue system tray
         context menu option is triggered.
@@ -1075,38 +1128,37 @@ class MainWindow(QMainWindow):
         todo_json = self.validate_todo_json()
 
         if state == 1:
-            for item in todo_json['todo']:
-                if item['name'] == todo_text:
-                    todo_json['inprog'].append(item)
+            for item in todo_json["todo"]:
+                if item["name"] == todo_text:
+                    todo_json["inprog"].append(item)
                     print("appended")
-                    todo_json['todo'].remove(item)
+                    todo_json["todo"].remove(item)
                     print("removed")
                     break
         elif state == 2:
-            for item in todo_json['inprog']:
-                if item['name'] == todo_text:
-                    todo_json['done'].append(item)
+            for item in todo_json["inprog"]:
+                if item["name"] == todo_text:
+                    todo_json["done"].append(item)
                     print("appended")
-                    todo_json['inprog'].remove(item)
+                    todo_json["inprog"].remove(item)
                     print("removed")
                     break
         elif state == 0:
-            for item in todo_json['done']:
-                if item['name'] == todo_text:
-                    todo_json['todo'].append(item)
+            for item in todo_json["done"]:
+                if item["name"] == todo_text:
+                    todo_json["todo"].append(item)
                     print("appended")
-                    todo_json['done'].remove(item)
+                    todo_json["done"].remove(item)
                     print("removed")
                     break
 
-        with open(TODO_PATH, 'w', encoding='utf-8') as f:
+        with open(TODO_PATH, "w", encoding="utf-8") as f:
             f.write(json.dumps(todo_json, indent=2))
 
         self.load_checkboxes()
 
     def validate_todo_json(self):
-        """Validates and returns the todo list as a JSON python object.
-        """
+        """Validates and returns the todo list as a JSON python object."""
         todo_json = None
         with open(TODO_PATH, "r") as f:
             try:
@@ -1114,15 +1166,15 @@ class MainWindow(QMainWindow):
             except json.decoder.JSONDecodeError as e:
                 self.todo_error = e
                 todo_error_dlg = ParseTodoErrorWindow(self)
-                wait = todo_error_dlg.show()
-        
+                todo_error_dlg.show()
+
         if todo_json:
             return todo_json
         else:
-            return '{}'
+            return "{}"
 
     def resizeEvent(self, event):
-#        self.load_checkboxes()
+        #        self.load_checkboxes()
         print(self.height())
         print(self.header_label.height())
         print(self.height() - self.header_label.height())
