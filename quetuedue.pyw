@@ -6,6 +6,7 @@ __version__ = "v0.6-b3"
 import os
 import re
 import sys
+import json
 
 from PyQt6.QtCore import (
     QProcess,
@@ -40,12 +41,14 @@ from PyQt6.QtWidgets import (
     QToolButton,
     QVBoxLayout,
     QWidget,
+    QDialog,
+    QTextBrowser
 )
 
 # Define Constants
 ICON_PATH = os.path.join(os.path.dirname(__file__), "assets", "icons")
 FONT_PATH = os.path.join(os.path.dirname(__file__), "assets", "fonts")
-TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "to-do.txt")
+TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "to-do.json")
 ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 USER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "config.config")
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "default.config")
@@ -95,7 +98,7 @@ def separator(hOrV):
     return line
 
 
-class AddWindow(QWidget):
+class AddWindow(QDialog):
     """The window pop-up for the add task toolbar action."""
 
     def __init__(self, MainWindow_instance, parent=None):
@@ -143,10 +146,25 @@ class AddWindow(QWidget):
         """Add a task to the to-do list by appending a line to the todo
         file in the to-do category (t).
         """
+        self.app_window.validate_todo_json()
         if not self.check_for_duplicates():
-            with open(TODO_PATH, "a", encoding="utf-8") as f:
-                line = self.input.text()
-                f.write(f"\nt{line}")
+            with open(TODO_PATH, 'r', encoding='utf-8') as f:
+                try:
+                    todo_json = json.load(f)
+                except Exception as e:
+                    print(e)
+                    self.close()
+            line = self.input.text()
+            item = {
+                "name": line,
+                "desc": "notImplented",
+                "due": "YYYY-MM-DDTHH:MM:SS",
+                "category": "white"
+            }
+            todo_json['todo'].append(item)
+            with open(TODO_PATH, "w", encoding="utf-8") as f:
+                f.write(json.dumps(todo_json, indent=2))
+                                
 
             self.app_window.load_checkboxes()
             self.close()
@@ -158,12 +176,22 @@ class AddWindow(QWidget):
         "Add" (self.yes_button) button and set the text to "Task already
         exists".
         """
-        with open(TODO_PATH, "r") as f:
-            lines = f.readlines()
+        with open(TODO_PATH, 'r', encoding='utf-8') as f:
+            try:
+                todo_json = json.load(f)
+            except Exception as e:
+                print(e)
+                self.close()
 
         line = self.input.text()
 
-        if f"t{line}" in lines or f"i{line}" in lines or f"d{line}" in lines:
+        dupe = False
+        for progress in todo_json:
+            for item in todo_json[progress]:
+                if line == item['name']:
+                    dupe = True
+
+        if dupe:
             self.yes_button.setEnabled(False)
             self.yes_button.setText("Task already exists")
             return True
@@ -180,7 +208,7 @@ class AddWindow(QWidget):
         self.close()
 
 
-class DelWindow(QWidget):
+class DelWindow(QDialog):
     """The window pop-up for the Remove action on the toolbar."""
 
     def __init__(self, MainWindow_instance, parent=None):
@@ -254,7 +282,7 @@ class DelWindow(QWidget):
         self.close()
 
 
-class MarkAllAsDoneWindow(QWidget):
+class MarkAllAsDoneWindow(QDialog):
     """The window pop-up for the Mark all as Done toolbar action."""
 
     def __init__(self, MainWindow_instance, parent=None):
@@ -340,7 +368,7 @@ class MarkAllAsDoneWindow(QWidget):
         self.close()
 
 
-class DelDoneWindow(QWidget):
+class DelDoneWindow(QDialog):
     """The window pop-up for the Remove all done toolbar action."""
 
     def __init__(self, MainWindow_instance, parent=None):
@@ -430,7 +458,7 @@ class DelDoneWindow(QWidget):
         self.close()
 
 
-class DelAllWindow(QWidget):
+class DelAllWindow(QDialog):
     """The window pop-up for the Remove ALL Items toolbar action."""
 
     def __init__(self, MainWindow_instance, parent=None):
@@ -507,7 +535,7 @@ class DelAllWindow(QWidget):
         self.w.show()
 
 
-class DelAllSureWindow(QWidget):
+class DelAllSureWindow(QDialog):
     """The window pop-up that asks the user to confirm removing all
     tasks via the Remove ALL Items toolbar action.
     """
@@ -542,13 +570,67 @@ class DelAllSureWindow(QWidget):
 
     def delAllDone(self):
         with open(TODO_PATH, "w"):
-            pass
+            f.write(json.dumps('{"todo": [], "inprog": [], "done": []}', indent=2))
 
         self.app_window.app_window.load_checkboxes()
         self.app_window.close()
         self.close()
 
     def exit(self):
+        self.close()
+
+class ParseTodoErrorWindow(QDialog):
+    """Dialog that appears if parsing the todo list as JSON fails.
+    """
+
+    def __init__(self, MainWindow_instance):
+        super().__init__()
+        self.setWindowTitle("Error")
+
+        self.main = MainWindow_instance
+
+        self.layout = QVBoxLayout()
+        self.button_layout = QHBoxLayout()
+        
+        self.label = QLabel("Corrupt or erroneous todo list!")
+        self.label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        self.label.setFont(QFont(self.main.families[4][0], 32))
+        
+        self.sub_label = QLabel(
+            "There was an error while trying to parse your todo list! If you have modified it externally, check the formatting."
+        )
+        self.sub_label.setFont(QFont(self.main.families[4][0], 12))
+        self.sub_label.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+        
+        self.error_label = QTextBrowser()
+        self.error_label.setText(str(self.main.todo_error))
+        self.error_label.setFont(QFont(self.main.families[4][0], 8))
+        self.error_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+
+        self.yes_button = QPushButton("Create blank list")
+        
+        self.no_button = QPushButton("Exit")
+        
+        self.button_layout.addWidget(self.yes_button)
+        self.button_layout.addWidget(self.no_button)
+        
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.sub_label)
+        self.layout.addWidget(self.error_label)
+        self.layout.addLayout(self.button_layout)
+        
+        self.no_button.clicked.connect(self.close_app)
+        self.yes_button.clicked.connect(self.clear_todo)
+        
+        self.setLayout(self.layout)
+
+    def close_app(self):
+        sys.exit()
+    
+    def clear_todo(self):
+        with open(TODO_PATH, 'w') as f:
+            f.write(json.dumps('{"todo": [], "inprog": [], "done": []}', indent=2))
+        
         self.close()
 
 
@@ -567,7 +649,7 @@ class MainWindow(QMainWindow):
         # Define fonts
         self.fonts = [
             "AdwaitaMono-Regular.ttf",
-            "AdwaitaMono-Bold.ttf",
+            "AdwaitaMono-Bold.ttf",g
             "AdwaitaMono-Italic.ttf",
             "AdwaitaMono-BoldItalic.ttf",
             "AdwaitaSans-Regular.ttf",
@@ -608,7 +690,6 @@ class MainWindow(QMainWindow):
         self.tray.setContextMenu(self.tray_menu)
 
         # Main layouts
-        self.window_layout = QVBoxLayout()
         self.stack_layout = QStackedLayout()
         self.main_layout = QVBoxLayout()
         self.tasks_layout = QHBoxLayout()
@@ -678,6 +759,8 @@ class MainWindow(QMainWindow):
         self.header_menu.addAction(self.header_menu_add)
 
         self.header_menu_remove_menu = QMenu("Remove")
+        self.header_menu_remove_menu.setFont(QFont(self.families[4][0]))
+
         self.header_menu_remove = QAction("Remove")
         self.header_menu_remove.triggered.connect(lambda: self.del_task_window())
         self.header_menu_remove.setFont(QFont(self.families[4][0]))
@@ -753,9 +836,7 @@ class MainWindow(QMainWindow):
 
         self.header_layout.addLayout(self.header_menu_layout)
         self.header_layout.addLayout(self.header_title_layout)
-
-        self.window_layout.addLayout(self.header_layout)
-        self.window_layout.addLayout(self.tabbar_layout)
+        self.main_layout.addLayout(self.header_layout)
 
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
@@ -806,32 +887,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(container)
 
-        # Pages
-        self.main_page = QWidget()
-        self.main_page.setLayout(self.main_layout)
-        self.stack_layout.addWidget(self.main_page)
-
-        self.add_page = AddWindow(self)
-        self.stack_layout.addWidget(self.add_page)
-
-        self.del_page = DelWindow(self)
-        self.stack_layout.addWidget(self.del_page)
-
-        self.del_all_page = DelAllWindow(self)
-        self.stack_layout.addWidget(self.del_all_page)
-
-        self.del_done_page = DelDoneWindow(self)
-        self.stack_layout.addWidget(self.del_done_page)
-
-        self.mark_off_page = MarkAllAsDoneWindow(self)
-        self.stack_layout.addWidget(self.mark_off_page)
-
-        self.window_layout.addLayout(self.stack_layout)
-
-        self.window_wrapper = QWidget()
-        self.window_wrapper.setLayout(self.window_layout)
-        self.setCentralWidget(self.window_wrapper)
-
         self.setMinimumWidth(800)
         QApplication.processEvents()
         self.load_checkboxes()
@@ -877,7 +932,7 @@ class MainWindow(QMainWindow):
 
     def load_checkboxes(self):
         """Clears layouts and system tray list and re-adds checkboxes
-        from to-do.txt.
+        from to-do.
         """
 
         # Clear checkboxes
@@ -892,48 +947,89 @@ class MainWindow(QMainWindow):
         self.tray_menu.addAction(self.title_action)
         self.tray_menu.addSeparator()
 
-        with open(TODO_PATH, "r") as f:
-            checkbox = ""
-            for line in f.readlines():
-                if not line.strip():
-                    continue
+        todo_json = self.validate_todo_json()
+        
+        for item in todo_json['todo']:
+            task_text = item['name']
+            task_desc = item['desc']            
 
-                self.blockSignals(True)
+            checkbox = QCheckBox(task_text)
 
-                task_text = line[1:].strip()
-                checkbox = QCheckBox(task_text)
+            max_width = max(50, int(self.width() / 3) - 2)
+            checkbox.setMaximumWidth(max_width)
+            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-                max_width = max(50, int(self.width() / 3) - 2)
-                checkbox.setMaximumWidth(max_width)
-                checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            try:
+                checkbox.setFont(QFont(self.families[4]))
+            except IndexError:
+                continue
 
-                try:
-                    checkbox.setFont(QFont(self.families[4]))
-                except IndexError:
-                    continue
+            # Add checkboxes and tray tasks depending on category
+            checkbox.setCheckState(Qt.CheckState.Unchecked)
+            checkbox.toolTip = task_desc
+            self.todo_layout.addWidget(checkbox)
+            checkbox_tray_action = QAction(task_text)
+            self.tray_actions.append(checkbox_tray_action)
+            self.tray_menu.addAction(checkbox_tray_action)
 
-                # Add checkboxes and tray tasks depending on category
-                if line.startswith("t"):
-                    checkbox.setCheckState(Qt.CheckState.Unchecked)
-                    self.todo_layout.addWidget(checkbox)
-                    checkbox_tray_action = QAction(task_text)
-                    self.tray_actions.append(checkbox_tray_action)
-                    self.tray_menu.addAction(checkbox_tray_action)
-                elif line.startswith("i"):
-                    checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
-                    self.in_prog_layout.addWidget(checkbox)
-                elif line.startswith("d"):
-                    checkbox.setCheckState(Qt.CheckState.Checked)
-                    self.done_layout.addWidget(checkbox)
-                else:
-                    continue
+            self.blockSignals(False)
 
-                self.blockSignals(False)
+            checkbox.setProperty("task", task_text)
+            checkbox.setTristate(True)
+            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
 
-                checkbox.setProperty("task", task_text)
-                checkbox.setTristate(True)
-                checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
+        for item in todo_json['inprog']:
+            task_text = item['name']
+            task_desc = item['desc']
 
+            checkbox = QCheckBox(task_text)
+
+            max_width = max(50, int(self.width() / 3) - 2)
+            checkbox.setMaximumWidth(max_width)
+            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+            try:
+                checkbox.setFont(QFont(self.families[4]))
+            except IndexError:
+                continue
+
+            # Add checkboxes and tray tasks depending on category
+            checkbox.setCheckState(Qt.CheckState.PartiallyChecked)
+            checkbox.toolTip = task_desc            
+            self.in_prog_layout.addWidget(checkbox)
+
+            self.blockSignals(False)
+
+            checkbox.setProperty("task", task_text)
+            checkbox.setTristate(True)
+            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
+
+        for item in todo_json['done']:
+            task_text = item['name']
+            task_desc = item['desc']
+
+            checkbox = QCheckBox(task_text)
+
+            max_width = max(50, int(self.width() / 3) - 2)
+            checkbox.setMaximumWidth(max_width)
+            checkbox.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
+            try:
+                checkbox.setFont(QFont(self.families[4]))
+            except IndexError:
+                continue
+
+            # Add checkboxes and tray tasks depending on category
+            checkbox.setCheckState(Qt.CheckState.Checked)
+            checkbox.toolTip = task_desc
+            self.done_layout.addWidget(checkbox)
+
+            self.blockSignals(False)
+
+            checkbox.setProperty("task", task_text)
+            checkbox.setTristate(True)
+            checkbox.stateChanged.connect(lambda state, cb=checkbox: self.moveCheckbox(cb, state))
+    
         # Add final static tray tasks and refresh the tray context menu
         self.tray_menu.addSeparator()
         self.tray_menu.addAction(self.open_app_tray_action)
@@ -970,55 +1066,62 @@ class MainWindow(QMainWindow):
         sys.exit()
 
     def moveCheckbox(self, cb, state):
-        """Deletes specified task (cb) from to-do.txt and re-adds it
-        with a new prefix based on the state (state) of the checkbox.
+        """Deletes specified task (cb) from to-do.json and re-adds it
+        in the new category based on the state (state) of the checkbox.
         """
-        text = cb.text()
-        prefixes = (f"t{text}", f"i{text}", f"d{text}")
-        if state == 0:
-            self.todo_layout.addWidget(cb)
+        print(state)
+        todo_text = cb.text()
+        todo_json = self.validate_todo_json()
 
-            with open(TODO_PATH, "r") as f:
-                lines = f.readlines()
-
-            lines = [line for line in lines if not any(line.startswith(p) for p in prefixes)]
-            lines = [line for line in lines if line.strip()]
-            with open(TODO_PATH, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-            with open(TODO_PATH, "a", encoding="utf-8") as f:
-                f.write(f"\nt{text}")
-
-        elif state == 1:
-            self.in_prog_layout.addWidget(cb)
-
-            with open(TODO_PATH, "r") as f:
-                lines = f.readlines()
-
-            lines = [line for line in lines if not any(line.startswith(p) for p in prefixes)]
-            lines = [line for line in lines if line.strip()]
-
-            with open(TODO_PATH, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-            with open(TODO_PATH, "a", encoding="utf-8") as f:
-                f.write(f"\ni{text}")
-
+        if state == 1:
+            for item in todo_json['todo']:
+                if item['name'] == todo_text:
+                    todo_json['inprog'].append(item)
+                    print("appended")
+                    todo_json['todo'].remove(item)
+                    print("removed")
+                    break
         elif state == 2:
-            self.done_layout.addWidget(cb)
+            for item in todo_json['inprog']:
+                if item['name'] == todo_text:
+                    todo_json['done'].append(item)
+                    print("appended")
+                    todo_json['inprog'].remove(item)
+                    print("removed")
+                    break
+        elif state == 0:
+            for item in todo_json['done']:
+                if item['name'] == todo_text:
+                    todo_json['todo'].append(item)
+                    print("appended")
+                    todo_json['done'].remove(item)
+                    print("removed")
+                    break
 
-            with open(TODO_PATH, "r") as f:
-                lines = f.readlines()
-
-            lines = [line for line in lines if not any(line.startswith(p) for p in prefixes)]
-
-            with open(TODO_PATH, "w", encoding="utf-8") as f:
-                f.writelines(lines)
-            with open(TODO_PATH, "a", encoding="utf-8") as f:
-                f.write(f"\nd{text}")
+        with open(TODO_PATH, 'w', encoding='utf-8') as f:
+            f.write(json.dumps(todo_json, indent=2))
 
         self.load_checkboxes()
+
+    def validate_todo_json(self):
+        """Validates and returns the todo list as a JSON python object.
+        """
+        todo_json = None
+        with open(TODO_PATH, "r") as f:
+            try:
+                todo_json = json.load(f)
+            except json.decoder.JSONDecodeError as e:
+                self.todo_error = e
+                todo_error_dlg = ParseTodoErrorWindow(self)
+                wait = todo_error_dlg.show()
+        
+        if todo_json:
+            return todo_json
+        else:
+            return '{}'
 
     def resizeEvent(self, event):
-        self.load_checkboxes()
+#        self.load_checkboxes()
         print(self.height())
         print(self.header_label.height())
         print(self.height() - self.header_label.height())
