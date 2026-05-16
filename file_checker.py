@@ -36,72 +36,6 @@ ROOT_PATH = os.path.dirname(__file__)
 
 print(os.path.basename(__file__))
 
-# Checking if update happened previously
-if os.path.splitext(os.path.basename(__file__))[0] == "file_checker_":  # True if renamed and ran during an update
-    print("Detected a previous update, removing and renaming file_checker.py")
-    print("Removing old file_checker...")
-    if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
-        os.remove(os.path.join(ROOT_PATH, "file_checker.py"))
-        print("Removed old file_checker.")
-
-    print("Renaming self: file_checker_.py -> file_checker.py")
-    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
-    print("Renamed self.")
-
-    print("Starting file_checker as normal...")
-    process = QProcess()
-    process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
-    sys.exit()
-
-
-# Define variables
-branch = False
-
-if "-b" in sys.argv:
-    index = sys.argv.index("-b")
-    if index + 1 < len(sys.argv):
-        branch = sys.argv[index + 1]
-elif "--branch" in sys.argv:
-    index = sys.argv.index("--branch")
-    if index + 1 < len(sys.argv):
-        branch = sys.argv[index + 1]
-
-r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags")
-print(r)
-if r.status_code == 200:
-    tags = r.json()
-    if tags:
-        newest_version = tags[0]["name"]
-    else:
-        print("No versions found")
-else:
-    print("Failed to fetch versions")
-    print(f"Response JSON: {r.json()}")
-
-if os.path.exists(os.path.join(os.path.dirname(__file__), "quetuedue.pyw")):
-    with open(os.path.join(os.path.dirname(__file__), "quetuedue.pyw"), "r", encoding="utf-8") as f:
-        content = f.read()
-
-    qtd_ver = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.MULTILINE)
-
-    if qtd_ver:
-        target_version = qtd_ver.group(1)
-    else:
-        target_version = newest_version
-        print("Could not find __version__ in quetuedue.py, is the file missing?")
-
-    print("Target ver:  ", target_version)
-else:
-    target_version = newest_version
-    print("Could not find __version__ in quetuedue.py, is the file missing?")
-try:
-    print("Latest ver:  ", newest_version)
-except NameError:
-    print("Failed to fetch versions, therefore newest_version is not defined.")
-    newest_version = target_version
-print("Current ver: ", target_version)
-
-
 class CheckSysFiles(QThread):
     """Uses requests to check all files and download any missing ones
     from the GitHub repo.
@@ -131,7 +65,7 @@ class CheckSysFiles(QThread):
                 os.path.join(ROOT_PATH, "logo.png"),
                 os.path.join(ROOT_PATH, "LICENSE"),
                 os.path.join(ROOT_PATH, "README.md"),
-                os.path.join(ASSET_PATH, "to-do.txt"),
+                os.path.join(ASSET_PATH, "to-do.json"),
                 os.path.join(ASSET_PATH, "fonts", "AdwaitaMono-Bold.ttf"),
                 os.path.join(ASSET_PATH, "fonts", "AdwaitaMono-BoldItalic.ttf"),
                 os.path.join(ASSET_PATH, "fonts", "AdwaitaMono-Italic.ttf"),
@@ -143,7 +77,7 @@ class CheckSysFiles(QThread):
                 os.path.join(ASSET_PATH, "icons", "logo-full.png"),
                 os.path.join(ASSET_PATH, "icons", "add_task_icon_dark.png"),
                 os.path.join(ASSET_PATH, "icons", "add_task_icon_light.png"),
-                os.path.join(ASSET_PATH, "icons", "del_all_icon_dark.png"),
+                os.path.join(ASSET_PATH, "cons", "del_all_icon_dark.png"),
                 os.path.join(ASSET_PATH, "icons", "del_all_icon_light.png"),
                 os.path.join(ASSET_PATH, "icons", "del_done_icon_dark.png"),
                 os.path.join(ASSET_PATH, "icons", "del_done_icon_light.png"),
@@ -164,7 +98,7 @@ class CheckSysFiles(QThread):
                 "logo.png",
                 "LICENSE",
                 "README.md",
-                "assets/to-do.txt",
+                "assets/to-do.json",
                 "assets/fonts/AdwaitaMono-Bold.ttf",
                 "assets/fonts/AdwaitaMono-BoldItalic.ttf",
                 "assets/fonts/AdwaitaMono-Italic.ttf",
@@ -559,6 +493,79 @@ if os.path.exists(os.path.join(ASSET_PATH, "icons", "logo-full.png")):
     splash.setAlignment(Qt.AlignmentFlag.AlignCenter)
     splash.resize(pixmap.size())
     splash.show()
+
+# Checking if update happened previously
+if os.path.splitext(os.path.basename(__file__))[0] == "file_checker_":  # True if renamed and ran during an update
+    print("Detected a previous update, removing and renaming file_checker.py")
+    print("Removing old file_checker...")
+    if os.path.exists(os.path.join(ROOT_PATH, "file_checker.py")):
+        os.remove(os.path.join(ROOT_PATH, "file_checker.py"))
+        print("Removed old file_checker.")
+
+    print("Renaming self: file_checker_.py -> file_checker.py")
+    os.rename(os.path.abspath(os.path.join(ROOT_PATH, "file_checker_.py")), os.path.join(ROOT_PATH, "file_checker.py"))
+    print("Renamed self.")
+
+    print("Starting file_checker as normal...")
+    process = QProcess()
+    process.startDetached("python", [os.path.join(ROOT_PATH, "file_checker.py")])
+    sys.exit()
+
+
+# Define variables
+branch = False
+
+if "-b" in sys.argv:
+    index = sys.argv.index("-b")
+    if index + 1 < len(sys.argv):
+        branch = sys.argv[index + 1]
+elif "--branch" in sys.argv:
+    index = sys.argv.index("--branch")
+    if index + 1 < len(sys.argv):
+        branch = sys.argv[index + 1]
+
+try:
+  r = requests.get("https://api.github.com/repos/nophoria/QueTueDue/tags", timeout=(3, 5))
+except requests.exceptions.ConnectTimeout as e:
+  print(f"WARN: Connection timed out while trying to fetch tags: {e}")
+  r = None
+except requests.exceptions.RequestException as e:
+  print(f"Failed to fetch tags: {e}")
+  r = None
+
+print(r)
+if r and r.status_code == 200:
+    tags = r.json()
+    if tags:
+        newest_version = tags[0]["name"]
+    else:
+        print("No versions found")
+else:
+    print("Failed to fetch versions")
+    if r: print(f"Response JSON: {r.json()}")
+
+if os.path.exists(os.path.join(os.path.dirname(__file__), "quetuedue.pyw")):
+    with open(os.path.join(os.path.dirname(__file__), "quetuedue.pyw"), "r", encoding="utf-8") as f:
+        content = f.read()
+
+    qtd_ver = re.search(r"^__version__\s*=\s*['\"]([^'\"]+)['\"]", content, re.MULTILINE)
+
+    if qtd_ver:
+        target_version = qtd_ver.group(1)
+    else:
+        target_version = newest_version
+        print("Could not find __version__ in quetuedue.py, is the file missing?")
+
+    print("Target ver:  ", target_version)
+else:
+    target_version = newest_version
+    print("Could not find __version__ in quetuedue.py, is the file missing?")
+try:
+    print("Latest ver:  ", newest_version)
+except NameError:
+    print("Failed to fetch versions, therefore newest_version is not defined.")
+    newest_version = target_version
+print("Current ver: ", target_version)
 
 # Check file thread setup
 thread = CheckSysFiles()
