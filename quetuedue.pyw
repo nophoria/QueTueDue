@@ -48,7 +48,7 @@ from PyQt6.QtWidgets import (
 # Define Constants
 ICON_PATH = os.path.join(os.path.dirname(__file__), "assets", "icons")
 FONT_PATH = os.path.join(os.path.dirname(__file__), "assets", "fonts")
-TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "to-do.json")
+TODO_PATH = os.path.join(os.path.dirname(__file__), "assets", "todo.json")
 ASSET_PATH = os.path.join(os.path.dirname(__file__), "assets")
 USER_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "config.config")
 DEFAULT_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config", "default.config")
