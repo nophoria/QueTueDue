@@ -239,21 +239,28 @@ class DelWindow(QDialog):
         self.sub_label.setFont(QFont(self.app_window.families[4][0], 12))
         self.task_list = QComboBox()
         self.yes_button = QPushButton("Remove")
-        with open(TODO_PATH, "r") as f:
-            if not f.read():
-                self.yes_button.setEnabled(False)
-                self.yes_button.setText("No tasks")
+
+        todo_json = self.app_window.validate_todo_json()
+
+        if (
+            len(todo_json["todo"]) + len(todo_json["inprog"]) + len(todo_json["done"])
+            == 0
+        ):
+            self.yes_button.setEnabled(False)
+            self.yes_button.setText("No tasks")
+
         self.no_button = QPushButton("Cancel")
         self.yes_button.setFont(QFont(self.app_window.families[4][0]))
         self.no_button.setFont(QFont(self.app_window.families[4][0]))
         self.button_layout.addWidget(self.yes_button)
         self.button_layout.addWidget(self.no_button)
-        with open(TODO_PATH, "r+", encoding="utf-8") as f:
-            for line in f.readlines():
-                if line.strip():
-                    task_text = re.split("t|i|d", line, maxsplit=1)[1]
-                    task_text = task_text.strip("\n")
-                    self.task_list.addItem(task_text)
+
+        todo_json = self.app_window.validate_todo_json()
+        for category in ["todo", "inprog", "done"]:
+            for item in todo_json[category]:
+                print(item)
+                self.task_list.addItem(item["name"])
+
         self.layout.addLayout(self.label_layout)
         self.layout.addWidget(self.sub_label)
         self.layout.addWidget(self.task_list)
@@ -268,17 +275,17 @@ class DelWindow(QDialog):
         """
         task_to_del = self.task_list.currentText()
         print(task_to_del)
-        prefixes = [f"t{task_to_del}", f"i{task_to_del}", f"d{task_to_del}"]
 
-        with open(TODO_PATH, "r") as f:
-            lines = f.readlines()
-            print(lines)
+        todo_json = self.app_window.validate_todo_json()
 
-        lines = [line for line in lines if line.strip("\n") not in prefixes]
-        print(lines)
+        for category in ["todo", "inprog", "done"]:
+            for item in todo_json[category]:
+                if item["name"] == task_to_del:
+                    todo_json[category].remove(item)
+                    break
 
         with open(TODO_PATH, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+            f.write(json.dumps(todo_json, indent=2))
 
         self.app_window.load_checkboxes()
         self.close()
@@ -330,15 +337,20 @@ class MarkAllAsDoneWindow(QDialog):
         self.sub_label.setText(self.gen_sub_label())
 
     def mark_all_as_done(self):
-        """Reads the lines in assets/to-do.txt and replaces the first
-        character in each with d to change the category to done."""
-        with open(TODO_PATH, "r") as f:
-            lines = f.readlines()
+        """Loops through each item in todo.json and moves it to the 'done' category"""
+        todo_json = self.app_window.validate_todo_json()
 
-        lines = ["d" + line[1:] if line.strip() else line for line in lines]
+        for item in todo_json['todo']:
+            todo_json['done'].append(item)
+        
+        for item in todo_json['inprog']:
+            todo_json['done'].append(item)
+        
+        todo_json['todo'] = []
+        todo_json['inprog'] = []
 
         with open(TODO_PATH, "w", encoding="utf-8") as f:
-            f.writelines(lines)
+            f.write(json.dumps(todo_json, indent=2))
 
         self.app_window.load_checkboxes()
         self.close()
@@ -347,26 +359,28 @@ class MarkAllAsDoneWindow(QDialog):
         """Changes the text on a label to mention first affected task
         explicitly and x more.
         """
+        todo_json = self.app_window.validate_todo_json()
         label_text = 'Are you sure you want to mark off "'
 
-        with open(TODO_PATH, "r") as f:
-            tasks = []
-
-            for line in f.readlines():
-                if line.strip() and not line.strip().startswith("d"):
-                    tasks.append(line[1:])
+        tasks = []
+        for category in ["todo", "inprog"]:
+            for item in todo_json[category]:
+                tasks.append(item["name"])
 
         if len(tasks) > 0:
-            label_text += f'{tasks[0]}"?'
+            label_text += f'{tasks[0]}"'
         else:
-            label_text = "There are no tasks in the To-Do or In Prog. categories."
+            label_text = "There are no tasks in the 'To-Do' or 'In Prog.' categories."
             self.yes_button.setEnabled(False)
             self.yes_button.setText("No tasks")
+            no_tasks = True
 
         if not len(tasks) - 1 < 2:
             label_text += f" and {len(tasks) - 1} others?"
         elif not len(tasks) - 1 < 1:
             label_text += f" and {len(tasks) - 1} other?"
+        elif not no_tasks:
+            label_text += "?"
 
         return label_text
 
@@ -422,14 +436,12 @@ class DelDoneWindow(QDialog):
         """Changes the text on a label to mention first affected task
         explicitly and x more.
         """
+        todo_json = self.app_window.validate_todo_json()
         label_text = 'Are you sure you want to remove "'
 
-        with open(TODO_PATH, "r") as f:
-            done_tasks = []
-
-            for line in f.readlines():
-                if line.startswith("d"):
-                    done_tasks.append(line.strip()[1:])
+        done_tasks = []
+        for item in todo_json["done"]:
+            done_tasks.append(item["name"])
 
         if len(done_tasks) > 0:
             label_text += f'{done_tasks[0]}"?'
@@ -442,6 +454,8 @@ class DelDoneWindow(QDialog):
             label_text += f" and {len(done_tasks) - 1} others?"
         elif not len(done_tasks) - 1 < 1:
             label_text += f" and {len(done_tasks) - 1} other?"
+        elif self.yes_button.isEnabled:
+            label_text += "?"
 
         return label_text
 
@@ -449,16 +463,12 @@ class DelDoneWindow(QDialog):
         """Removes all lines in to-do.txt beginning with d (the done
         category).
         """
-        with open(TODO_PATH, "r") as f:
-            lines = f.readlines()
+        todo_json = self.app_window.validate_todo_json()
 
-        newlines = []
-        for line in lines:
-            if not line.startswith("d"):
-                newlines.append(line[1:].strip())
+        todo_json["done"] = []
 
         with open(TODO_PATH, "w", encoding="utf-8") as f:
-            f.writelines(newlines)
+            f.write(json.dumps(todo_json, indent=2))
 
         self.app_window.load_checkboxes()
         self.close()
@@ -515,24 +525,27 @@ class DelAllWindow(QDialog):
         """
         label_text = 'Are you sure you want to remove "'
 
-        with open(TODO_PATH, "r") as f:
-            tasks = []
+        todo_json = self.app_window.validate_todo_json()
 
-            for line in f.readlines():
-                if line:
-                    tasks.append(line[1:])
+        tasks = []
+        for category in ["todo", "inprog", "done"]:
+            for item in todo_json[category]:
+                tasks.append(item["name"])
 
         if len(tasks) > 0:
-            label_text += f'{tasks[0]}"?'
+            label_text += f'{tasks[0]}"'
         else:
             label_text = "There are no tasks"
             self.yes_button.setEnabled(False)
             self.yes_button.setText("No tasks")
+            no_tasks = True
 
         if not len(tasks) - 1 < 2:
             label_text += f" and {len(tasks) - 1} others?"
         elif not len(tasks) - 1 < 1:
             label_text += f" and {len(tasks) - 1} other?"
+        elif not no_tasks:
+            label_text += "?"
 
         return label_text
 
@@ -1181,8 +1194,9 @@ class MainWindow(QMainWindow):
         super().resizeEvent(event)
 
 
-app = QApplication(sys.argv)
-app.setStyle("Fusion")
-mainWindow = MainWindow()
-mainWindow.show()
-app.exec()
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    app.setStyle("Fusion")
+    mainWindow = MainWindow()
+    mainWindow.show()
+    app.exec()
