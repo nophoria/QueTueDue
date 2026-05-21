@@ -5,7 +5,6 @@ __version__ = "v0.6-b3"
 # Import dependecies
 import json
 import os
-import re
 import sys
 
 from PyQt6.QtCore import (
@@ -373,14 +372,11 @@ class MarkAllAsDoneWindow(QDialog):
             label_text = "There are no tasks in the 'To-Do' or 'In Prog.' categories."
             self.yes_button.setEnabled(False)
             self.yes_button.setText("No tasks")
-            no_tasks = True
 
         if not len(tasks) - 1 < 2:
             label_text += f" and {len(tasks) - 1} others?"
         elif not len(tasks) - 1 < 1:
             label_text += f" and {len(tasks) - 1} other?"
-        elif not no_tasks:
-            label_text += "?"
 
         return label_text
 
@@ -612,7 +608,7 @@ class ParseTodoErrorWindow(QDialog):
 
     def __init__(self, MainWindow_instance):
         super().__init__()
-        self.setWindowTitle("Error")
+        self.setWindowTitle("QueTueDue - To-Do List Error")
 
         self.main = MainWindow_instance
 
@@ -664,6 +660,28 @@ class ParseTodoErrorWindow(QDialog):
 
         self.close()
 
+class SettingsWindow(QDialog):
+    def __init__(self, MainWindow_instance):
+        super().__init__()
+        self.setWindowTitle("QueTueDue - Settings")
+
+        self.app_window = MainWindow_instance
+        
+        self.main_layout = QVBoxLayout()
+        self.header_layout = QHBoxLayout()
+
+        self.header_title = QLabel("Settings")
+        self.header_title.setFont(QFont(self.app_window.families[0], 32))
+        self.header_title.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        self.header_seperator = separator("h")
+
+        self.header_layout.addWidget(self.header_title)
+        self.header_layout.addWidget(self.header_seperator)
+
+        self.main_layout.addLayout(self.header_layout)
+
+        self.setLayout(self.main_layout)
+
 
 class MainWindow(QMainWindow):
     """The main app window containing all the categories, tasks toolbars
@@ -672,6 +690,9 @@ class MainWindow(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
+        self.old_height = 0
+        self.old_width = 0
 
         self.setWindowTitle("QueTueDue")
         self.setWindowIcon(QIcon(os.path.join(ICON_PATH, "logo.svg")))
@@ -828,7 +849,7 @@ class MainWindow(QMainWindow):
         self.header_menu.addSeparator()
 
         self.header_menu_settings = QAction("Settings")
-        # self.header_menu_settings.triggered.connect() # TO-DO make settings page
+        self.header_menu_settings.triggered.connect(lambda: self.settings_window()) # TO-DO make settings page
         self.header_menu_settings.setFont(QFont(self.families[4][0]))
         self.header_menu.addAction(self.header_menu_settings)
 
@@ -977,10 +998,16 @@ class MainWindow(QMainWindow):
         self.w = DelAllWindow(self)
         self.w.show()
 
+    def settings_window(self, checked=False):
+        """Open the Remove ALL Items toolbar task window pop-up."""
+        self.w = SettingsWindow(self)
+        self.w.show()
+
     def open_app(self):
         """Open the main app when the Open full app system tray context
         menu option is triggered.
         """
+        self.hide() # To make sure the window will be on top when shown
         self.show()
 
     def clear_layout(self, layout, start):
@@ -1187,11 +1214,14 @@ class MainWindow(QMainWindow):
             return "{}"
 
     def resizeEvent(self, event):
-        #        self.load_checkboxes()
-        print(self.height())
-        print(self.header_label.height())
-        print(self.height() - self.header_label.height())
         super().resizeEvent(event)
+        if self.height() > self.old_height + 50 or self.height() < self.old_height - 50:
+            self.load_checkboxes()
+            self.old_height = self.height()
+            
+        if self.width() > self.old_width + 50 or self.width() < self.old_width - 50:
+            self.load_checkboxes()
+            self.old_width = self.width()
 
 
 if __name__ == "__main__":
