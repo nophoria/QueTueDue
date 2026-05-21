@@ -678,8 +678,40 @@ class SettingsWindow(QDialog):
         self.header_layout.addWidget(self.header_title)
         self.header_layout.addWidget(self.header_seperator)
 
-        self.main_layout.addLayout(self.header_layout)
+        self.theme_settings_layout = QHBoxLayout()
+        self.theme_settings_label_layout = QVBoxLayout()
+        self.theme_settings_label = QLabel("Theme:")
+        self.theme_settings_label.setFont(QFont(self.app_window.families[0], 20))
+        self.theme_settings_desc_label = QLabel("Pick a application theme to your liking.")
+        self.theme_settings_desc_label.setFont(QFont(self.app_window.families[4][0]))
+        self.theme_settings_dropdown = QComboBox()
+        self.theme_settings_label_layout.addWidget(self.theme_settings_label)
+        self.theme_settings_label_layout.addWidget(self.theme_settings_desc_label)
+        self.theme_settings_layout.addLayout(self.theme_settings_label_layout)
+        self.theme_settings_layout.addWidget(self.theme_settings_dropdown)
 
+        self.main_layout.addLayout(self.header_layout)
+        self.main_layout.addLayout(self.theme_settings_layout)
+        self.setLayout(self.main_layout)
+
+class AboutWindow(QDialog):
+    def __init__(self, MainWindow_instance):
+        super().__init__()
+        self.setWindowTitle("QueTueDue - About")
+
+        self.app_window = MainWindow_instance
+        
+        self.main_layout = QVBoxLayout()
+        self.logo_layout = QHBoxLayout()
+        self.logo = QLabel()
+        pixmap = QPixmap(os.path.join(ASSET_PATH, "icons", "logo.png"))
+        pixmap = pixmap.scaledToWidth(128, Qt.TransformationMode.SmoothTransformation)
+        self.logo.setPixmap(pixmap)
+        self.logo.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.logo.resize(pixmap.size())
+        self.logo_layout.addWidget(self.logo)
+
+        self.main_layout.addLayout(self.logo_layout)
         self.setLayout(self.main_layout)
 
 
@@ -854,7 +886,7 @@ class MainWindow(QMainWindow):
         self.header_menu.addAction(self.header_menu_settings)
 
         self.header_menu_about = QAction("About")
-        # self.header_menu_settings.triggered.connect() # TO-DO make About (fullscreen) page
+        self.header_menu_about.triggered.connect(lambda: self.about_window()) # TO-DO make About (fullscreen) page
         self.header_menu_about.setFont(QFont(self.families[4][0]))
         self.header_menu.addAction(self.header_menu_about)
 
@@ -999,8 +1031,13 @@ class MainWindow(QMainWindow):
         self.w.show()
 
     def settings_window(self, checked=False):
-        """Open the Remove ALL Items toolbar task window pop-up."""
+        """Open the settings menu window pop-up."""
         self.w = SettingsWindow(self)
+        self.w.show()
+
+    def about_window(self, checked=False):
+        """Open the about window pop-up."""
+        self.w = AboutWindow(self)
         self.w.show()
 
     def open_app(self):
